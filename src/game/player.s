@@ -1,6 +1,6 @@
 .file "src/game/player.s"
 
-.global player_init, player_movement
+.global player_init, print_player_position
 
 .section .game.text
 	player_appearance: .asciz "/-^-\\"
@@ -179,6 +179,9 @@ do_animation:
 	cmpb    $0, start_anim
 	je      epilogue # if it is 0 jump to epilogue
 
+	# check if there is a collision
+	call  	detectCollision
+
 	# print character 'A' at coords (x,y)
 	movb 	bullet_position_x, 	%dil 
 	addb 	$2, %dil 					# hard coded cannon position
@@ -189,8 +192,8 @@ do_animation:
 
 	# decrease y because we are going up 
 	decb    bullet_position_y
-	cmpb	$0, bullet_position_y
-	jne     epilogue # if y is not 0 we still have an animation going
+	cmpb	$-1, bullet_position_y
+	jne     epilogue # if y is not -1 we still have an animation going
 
 	# reached end of the animation
 	movb    $24, bullet_position_y  # intialize y to the bottom of the screen again
@@ -201,3 +204,69 @@ epilogue:
 	popq 	%rbp
 
 	ret
+
+# getter for information about player's ship position
+
+# rax - index of the ship that was hit; if there was no ship hit returns -1
+detectCollision:
+	# prologue
+	pushq   %rbp 
+	movq 	%rsp, %rbp
+
+	pushq 	%r14
+	pushq 	%r15
+
+	movq 	number_of_ships, %r15
+	collision_loop:
+		cmpq 	$1, %rax
+		je 		collision_epilogue
+
+		cmpq 	$-1, %r15
+		je 		collision_epilogue
+
+		movq	%r15, %rdi
+		call 	get_ship_at_position
+
+		movq 	(%rax), %rcx
+		movb 	%cl, %dl 		# x coordinate ship
+		decb 	%dl
+		decb 	%dl
+		shr 	$8, %rcx
+		movb 	%cl, %r8b 		# y coordinate ship
+		shr 	$8, %rcx
+		movb 	%cl, %r9b 		# width of the ship
+		decb 	%r9b
+		shr 	$8, %rcx
+		movb 	%cl, %r14b 		# height of the ship
+		decb 	%r14b
+
+		cmpb 	bullet_position_x, %dl
+		jg 		collision_no
+		addb 	%dl, %r9b
+		cmpb 	bullet_position_x, %r9b
+		jl  	collision_no
+		addb 	%r14b, %r8b
+		cmpb	bullet_position_y, %r8b
+		jl 		collision_no
+
+		collision_yes:
+			addb 	$5, (%rax)
+			movq 	%r15, %rax
+			jmp 	finish_collision_loop
+
+		collision_no:
+			movq 	$-1, %rax
+
+		finish_collision_loop:
+			decq 	%r15
+			jmp 	collision_loop	
+
+	collision_epilogue:
+		popq 	%r15
+		popq 	%r14
+
+		# epilogue	
+		movq    %rbp, %rsp
+		popq 	%rbp
+
+		ret

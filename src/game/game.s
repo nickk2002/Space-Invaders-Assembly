@@ -33,6 +33,8 @@ gameInit:
 
 	call 	player_init
 
+	call 	enemy_creation
+
 	# clear the screen
 	call 	clear_screen
 
@@ -48,7 +50,7 @@ gameLoop:
 	call 	clear_screen
 	call 	player_input
 	call 	print_player_position
-	call 	enemy_test
+	call 	print_all_enemy_ships
 
 	# epilogue
 	movq    %rbp, %rsp

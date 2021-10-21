@@ -1,17 +1,15 @@
 .file "src/game/enemy.s"
 
 .section .game.text
-	enemy_ship: .asciz "\\         /
- \\       /
-  \\__Y__/"
+	enemy_ship: .asciz "12345"
 .data
 	pos_y:  .quad 0
 	pos_x:	.quad 34
 	enemy_array: .skip 1024
 	current_pointer: .quad 0
-	index_count: 	.quad 0
+	number_of_ships: 	.quad 0
 	attribute_count: .quad 5
-.global enemy_test
+.global enemy_test, number_of_ships, get_ship_at_position,print_all_enemy_ships
 
 # Creates a ship that has the following attributes
 # rdi: x -> top left x coord
@@ -41,7 +39,7 @@ create_ship:
 	addq	%rsi, current_pointer 	 # next free position 
 	# current_pointer = current_pointer + attribute_count
 
-	incq	index_count  # increment the ship count
+	incq	number_of_ships  # increment the ship count
 
 	popq	%r15
 	# epilogue
@@ -59,9 +57,9 @@ create_basic_ship:
 
 	# rdi -> dil from the parameter
 	// movb	$10, %dil
-	movb 	$0,  %sil #y
-	movb 	$3,  %dl  # width
-	movb    $7,  %cl  # height
+	movb 	$10,  %sil #y
+	movb 	$5,  %dl  # width
+	movb    $1,  %cl  # height
 	movb    $0,  %r8b # type 0
 	call    create_ship
 
@@ -72,16 +70,16 @@ create_basic_ship:
 
 	ret
 
-enemy_test:
+enemy_creation:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
-	movq	$0, index_count
+	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
 	movq	enemy_array,%rax 
 	movq	%rax,current_pointer
 
-	movb	$20, %dil  # x
+	movb	$0, %dil  # x
 	call    create_basic_ship
 
 	movb	$35, %dil  # x
@@ -90,12 +88,16 @@ enemy_test:
 	movb	$50, %dil  # x
 	call    create_basic_ship
 
-	movq 	enemy_array, %rdi 
-	call 	print_ships
-
 	# epilogue
 	movq    %rbp, %rsp
 	popq    %rbp 
+
+	ret
+
+print_all_enemy_ships:
+
+	movq	enemy_array,%rdi 
+	call 	print_ships
 
 	ret
 
@@ -116,7 +118,7 @@ get_ship_at_position:
 
 	ret
 # rdi -> a pointer to the ship in memory
-# print the ships based on the index_count
+# print the ships based on the number_of_ships
 print_ships:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
@@ -124,7 +126,7 @@ print_ships:
 	pushq 	%r15
 	movq	%rdi, %r15
 
-	movq	index_count, %rcx
+	movq	number_of_ships, %rcx
 	print_ships_loop:
 		cmpq	$0, %rcx 
 		je 		end_ships_loop
