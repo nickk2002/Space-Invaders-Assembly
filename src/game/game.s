@@ -29,10 +29,60 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 	maxY: .byte 25
 	counter: .byte 10
 	start_anim: .quad 0
+.data
+	pattern_x: .byte 20 
+	pattern_y: .byte 20
 
 
 .section .game.text
+	pattern: .asciz "*****\n ***\n  *"
+
+print_pattern:
+	# prologue
+	pushq   %rbp 
+	movq 	%rsp, %rbp
+
+	movq 	$pattern, %r14 
+
+	movq	$20, pattern_x
+	movq	$20, pattern_y
 	
+	loop: 
+		cmpb $0x00, (%r14) # compare char with 0 bytes
+		je end_loop # end the loop
+
+		cmpb $0x0A, (%r14) # compare with the \n
+		jne normal  # if it is not equl jump to normal
+		new_line:
+			# we have a new line
+			incb pattern_y # go to the next line
+			movb $20, pattern_x # should be 20
+			jmp end_else 
+		normal:
+
+			movb pattern_x,   %dil
+			movb pattern_y,   %sil
+			movb (%r14),	  %dl 
+			movb $0x0f,		  %cl
+			call putChar
+
+			incb pattern_x
+			jmp end_else
+		end_else:
+
+		incq %r14
+		jmp loop
+
+	
+
+	end_loop:
+	
+
+	# epilogue
+	movq    %rbp, %rsp
+	popq 	%rbp
+
+	ret
 
 # this function simulates the "shooting" when you press Z in mainLoop
 do_animation:
@@ -90,7 +140,7 @@ gameLoop:
 	movq 	%rsp, %rbp
 
 	call clear_screen
-	
+	call print_pattern
 
 	call readKeyCode
 	cmpq $0x2C, %rax # check if the key Z was pressed 
