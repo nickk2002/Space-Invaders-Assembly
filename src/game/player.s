@@ -2,6 +2,9 @@
 
 .global player_init, player_movement
 
+.section .game.text
+	player_appearance: .asciz "/-^-\\"
+
 .data
 	player_size: .byte 1
 	player_position_x: .byte 40
@@ -23,7 +26,11 @@ player_init:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 	
-	movb $0, start_anim
+	movb 	$0, start_anim
+	movq 	$player_appearance, %rdi
+	call 	character_count
+	movb 	%al, player_size
+
 
 	# epilogue		
 	movq    %rbp, %rsp
@@ -129,9 +136,15 @@ print_player_position:
 
 	movb 	player_position_x, %dil
 	movb	player_position_y, %sil
+	movq 	$player_appearance, %rdx
 	movb	$0x0f, %cl
-	movb	$'M', %dl
-	call	putChar
+	call 	print_pattern
+
+	// movb 	player_position_x, %dil
+	// movb	player_position_y, %sil
+	// movb	$0x0f, %cl
+	// movb	$'M', %dl
+	// call	putChar
 
 	# epilogue		
 	movq    %rbp, %rsp
@@ -168,6 +181,7 @@ do_animation:
 
 	# print character 'A' at coords (x,y)
 	movb 	bullet_position_x, 	%dil 
+	addb 	$2, %dil 					# hard coded cannon position
 	movb	bullet_position_y,	%sil
 	movb 	$'A', %dl
 	movb    $0x0f, %cl

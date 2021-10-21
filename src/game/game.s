@@ -23,136 +23,33 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .global gameLoop
 
 .section .game.data
-	x: .byte 0
-	y: .byte 0
-	maxX: .byte 80
-	maxY: .byte 25
-	counter: .byte 10
-	start_anim: .quad 0
-.data
-	pattern_x: .byte 20 
-	pattern_y: .byte 20
-
 
 .section .game.text
-	pattern: .asciz "*****\n ***\n  *"
-
-print_pattern:
-	# prologue
-	pushq   %rbp 
-	movq 	%rsp, %rbp
-
-	movq 	$pattern, %r14 
-
-	movq	$20, pattern_x
-	movq	$20, pattern_y
-	
-	loop: 
-		cmpb $0x00, (%r14) # compare char with 0 bytes
-		je end_loop # end the loop
-
-		cmpb $0x0A, (%r14) # compare with the \n
-		jne normal  # if it is not equl jump to normal
-		new_line:
-			# we have a new line
-			incb pattern_y # go to the next line
-			movb $20, pattern_x # should be 20
-			jmp end_else 
-		normal:
-
-			movb pattern_x,   %dil
-			movb pattern_y,   %sil
-			movb (%r14),	  %dl 
-			movb $0x0f,		  %cl
-			call putChar
-
-			incb pattern_x
-			jmp end_else
-		end_else:
-
-		incq %r14
-		jmp loop
-
-	
-
-	end_loop:
-	
-
-	# epilogue
-	movq    %rbp, %rsp
-	popq 	%rbp
-
-	ret
-
-# this function simulates the "shooting" when you press Z in mainLoop
-do_animation:
-	# prologue
-	pushq   %rbp 
-	movq 	%rsp, %rbp
-
-	# check if start_anim is 0
-	cmpq    $0, %r15
-	je      epilogue # if it is 0 jump to epilogue
-
-
-	# print character 'A' at coords (x,y)
-	movq 	x, 	%rdi 
-	movq	y,	%rsi 
-	movb 	$'A', %dl
-	movb    $0x0f, %cl
-	call    putChar
-
-	# decrease y because we are going up 
-	decb    y 
-	cmpb	$0, y 
-	jne     epilogue # if y is not 0 we still have an animation going
-
-	# reached end of the animation
-	movq    $24, y  # intialize y to the bottom of the screen again
-	movq 	$0, %r15
-
-epilogue:		
-	movq    %rbp, %rsp
-	popq 	%rbp
-
-	ret
 
 gameInit:
 	# set the timer to 1193182/39772 = 30 fps 
-	movq $39772, %rdi 
-	call setTimer # set timer 30 fps I think?
+	movq 	$39772, %rdi 
+	call 	setTimer # set timer 30 fps I think?
+
+	call 	player_init
 
 	# clear the screen
-	call clear_screen
+	call 	clear_screen
 
-	# setup x,y coords of the missle that shoots
-	# is in at the bottom of the screen in the middle
-	movq $40, x 
-	movq $24, y
-	movq $0, %r15
 	ret
 
 gameLoop:	
 	# prologue
 	# start_anim should be a var but it does not work.
-	# i replaced start_anim with %r15 and it worked!
+	# i replaced start_anim with start_anim and it worked!
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
-	call clear_screen
-	call print_pattern
-
-	call readKeyCode
-	cmpq $0x2C, %rax # check if the key Z was pressed 
-	jne did_not_press
-
-	# we did press Z
-	# we mark start_anim true
-	movq $1, %r15
-	
-	did_not_press:
-	# we call the animation either way because the animation checks the start_anim value
-	call do_animation
+	call 	clear_screen
+	call  	player_input
+	// call player_movement
+	// call 	player_shoot
+	call 	print_player_position
 
 	# epilogue
 	movq    %rbp, %rsp

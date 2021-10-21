@@ -11,7 +11,7 @@
 	current_option: .quad 0
 	middle_x: .byte 30
 	exiting_main_menu: .byte -1
-	jumptable:
+	jumptable1:
 		.quad handle_option1
 		.quad handle_option2
 		.quad handle_option3
@@ -66,28 +66,28 @@ main_menu_handle:
 	call readKeyCode 
 	movq $0, current_option 
 	cmpb $0x02, %al # compare if 1 is pressed 
-	je switch
+	je switch1
 
 	incq current_option 
 	cmpb $0x03, %al # compare if 2 is pressed 
-	je switch
+	je switch1
 
 	incq current_option 
 	cmpb $0x04, %al # compare if 3 is pressed  
-	je switch
+	je switch1
 
 	incq current_option 
 	cmpb $0x05, %al # compare if 4 is pressed 
-	je switch
+	je switch1
 
 	call print_menu_options
 	jmp  end_switch
 
-	switch:
+	switch1:
 		movb $1, exiting_main_menu
 		shlq $3, current_option  # rdi * 8
 		movq current_option, %rax
-		movq jumptable(%rax), %rax 
+		movq jumptable1(%rax), %rax 
 		shrq $3, current_option
 		call *%rax  
 
