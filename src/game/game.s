@@ -46,10 +46,9 @@ gameLoop:
 	movq 	%rsp, %rbp
 
 	call 	clear_screen
-	call  	player_input
-	// call player_movement
-	// call 	player_shoot
+	call 	player_input
 	call 	print_player_position
+	call 	enemy_test
 
 	# epilogue
 	movq    %rbp, %rsp
