@@ -19,6 +19,7 @@
 # rdx: width 
 # rcx: height
 # r8:  the type of the ship 0,1,2
+# r9:  the health of the ship
 # we use the current_pointer as the memeory position
 # return the next free position
 create_ship:
@@ -32,7 +33,7 @@ create_ship:
 	movb	%sil, 1(%r15)# y coordinate
 	movb	%dl,  2(%r15) # width
 	movb 	%cl,  3(%r15) # height 
-	movb    %r8b, 4(%r15) # the type of the shup
+	movb    %r8b, 4(%r15) # the type of the ship
 
 	movq    5(%r15), %rax # the next free position
 
@@ -98,6 +99,22 @@ enemy_test:
 
 	ret
 
+# returns a pointer to a ship at position i in the array
+# rdi -> index of the ship
+# rax -> the pointer to the ship
+get_ship_at_position:
+	pushq   %rbp 
+	movq 	%rsp, %rbp
+
+	# array_index + attribute_count * rdi
+	movq	attribute_count, %rax
+	mulq	%rdi 
+	addq	enemy_array, %rax
+	# epilogue
+	movq    %rbp, %rsp
+	popq    %rbp 
+
+	ret
 # rdi -> a pointer to the ship in memory
 # print the ships based on the index_count
 print_ships:
@@ -116,7 +133,7 @@ print_ships:
 		movb	(%r15), 	 %dil # x
 		movb    1(%r15),     %sil # y
 		movq    $enemy_ship, %rdx # the pattern of our ship
-		movb    $0x0f,       %cl # color 
+		movb    $0x04,       %cl # color 
 		call    print_pattern
 
 		popq 	%rcx
