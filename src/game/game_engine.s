@@ -1,5 +1,7 @@
 .file "src/game/game_engine.s"
 
+
+.section .game.text
 .global clear_screen
 .global print_pattern
 .global character_count
