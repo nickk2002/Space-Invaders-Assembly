@@ -175,7 +175,7 @@ ps2_is_key_down:
 
 signal_key_down:
     movq $1, %rax
-    movb $0, key_states(%rdi)
+    /*movb $0, key_states(%rdi)*/
 
 ps2_is_key_down_finish:
     ret

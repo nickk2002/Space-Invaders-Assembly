@@ -168,6 +168,8 @@ player_shoot:
     movq $2000, %rdi
     call playFrequency
     call unmuteSpeaker
+    movq $500, %rdi
+    call playFrequency
 	
 	# we call the animation either way because the animation checks the start_anim value
 	// call do_animation
