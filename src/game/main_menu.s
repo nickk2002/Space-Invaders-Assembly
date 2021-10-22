@@ -61,7 +61,7 @@ main_menu_handle:
 
 
 	cmpb $-1, exiting_main_menu
-	jne switch
+	jne switch1
 
 	call readKeyCode 
 	movq $0, current_option 

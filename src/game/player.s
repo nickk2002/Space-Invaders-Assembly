@@ -1,12 +1,15 @@
 .file "src/game/player.s"
 
-.global player_init, print_player_position
+.global player_init, print_player_position,player_loop
 
 .section .game.text
 	player_appearance: .asciz "/-^-\\"
 
 .data
 	player_size: .byte 1
+
+	bullet_initial_y_pos: .byte 23 
+
 	player_position_x: .byte 40
 	player_position_y: .byte 24
 	bullet_position_x: .byte 40
@@ -14,12 +17,14 @@
 	start_anim: .byte 0
 	game_frame_x: .byte 80
 	game_frame_y: .byte 25
+	a_pressed: .byte 0 
+	d_pressed: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
 	jumptable:
+	    .quad player_shoot
 	    .quad player_move_left
 	    .quad player_move_right
-	    .quad player_shoot
 
 player_init:
 	# prologue
@@ -27,6 +32,7 @@ player_init:
 	movq 	%rsp, %rbp
 	
 	movb 	$0, start_anim
+	movb    $0, a_pressed
 	movq 	$player_appearance, %rdi
 	call 	character_count
 	movb 	%al, player_size
@@ -38,6 +44,33 @@ player_init:
 
 	ret
 
+
+handle_switch_statement:
+
+	# prologue
+	pushq   %rbp 
+	movq 	%rsp, %rbp
+  	# switch case
+    shlq 	$3, %rsi               # multiply %rax by 8
+    movq 	jumptable(%rsi), %rsi  # copy the address of the subroutine selected by switch to %rax
+    call 	*%rsi                  # call the subroutine stored at the address which is in %rax
+
+
+	# epilogue		
+	movq    %rbp, %rsp
+	popq 	%rbp
+    ret 
+
+
+player_loop:
+	
+	call    player_move_left
+	call    player_move_right
+	call 	print_player_position
+	call 	player_input
+	call 	do_animation
+
+	ret 
 player_input:
 	# prologue
 	pushq   %rbp 
@@ -45,50 +78,74 @@ player_input:
 	
 	call	readKeyCode
 
-	movq	$0, %rsi
-    movq $0x1E, %rdi
-    call isKeyDown
-	cmpb 	$1, %al 		# A was pressed
-	je 		switch
+    movq 	$0x11, %rdi
+    call 	isKeyUp
+	cmpb 	$1, %al 		# W was released
+	jne     did_not_press_w
+	call    player_shoot
 
-	incq	%rsi
-    movq $0x20, %rdi
-    call isKeyDown
-	cmpb 	$1, %al 		# D was pressed
-	je 		switch
+	did_not_press_w:
 
-	incq	%rsi
-    movq $0x11, %rdi
-    call isKeyUp
-	cmpb 	$1, %al 		# W was pressed
-	je 		switch
+	##### HANDLE A PRESS #####
+    movq 	$0x1E, %rdi
+    call 	isKeyDown
+	cmpb 	$1, %al 		# A was pressed down
+	
+	jne     did_not_press_down_a
+	movq	$1,a_pressed	# a was pressed
+
+	did_not_press_down_a:
+	movq 	$0x1E, %rdi
+    call 	isKeyUp
+	cmpb 	$1, %al 		# A was was released
+	
+	jne     did_not_release_a
+	movq	$0,a_pressed	# a was released so 'a' is not pressed anymore
+
+	did_not_release_a:
+
+	##### HANDLE D PRESS #####
+	movq 	$0x20, %rdi
+    call 	isKeyDown
+	cmpb 	$1, %al 		# D was pressed down
+	
+	jne     did_not_press_down_d
+	movq	$1,d_pressed	# d was pressed
+
+	did_not_press_down_d:
+	movq 	$0x20, %rdi
+    call 	isKeyUp
+	cmpb 	$1, %al 		# D was was released
+	
+	jne     did_not_release_d
+	movq	$0,d_pressed	# d was released so d is not pressed anymore
+
+	did_not_release_d:
+
+
 
 	epilogue_player_input:
-		cmpb 	$0, start_anim
-		jne  	dont_update_bullet_position
+		# update the bullet position
+		cmpb	$1, start_anim
+		je      dont_update_bullet_pos
 		movb 	player_position_x, %al 
 		movb 	%al, bullet_position_x
+		dont_update_bullet_pos:
 
-		dont_update_bullet_position:
-		call 	do_animation
+
 		# epilogue		
 		movq    %rbp, %rsp
 		popq 	%rbp
 
 		ret
 
-    # switch case
-    switch:
-	    shlq 	$3, %rsi               # multiply %rax by 8
-	    movq 	jumptable(%rsi), %rsi  # copy the address of the subroutine selected by switch to %rax
-	    call 	*%rsi                  # call the subroutine stored at the address which is in %rax
-	    jmp 	epilogue_player_input  # jump back to the body of the loop to finish the iteration
-
-
 player_move_left:
 	# prologue
 	pushq   %rbp 
 	movq 	%rsp, %rbp
+
+	cmpb	$0,	a_pressed
+	je      epilogue_move_left
 
 	decb	player_position_x
 	cmpb 	$0, player_position_x
@@ -112,6 +169,10 @@ player_move_right:
 	# prologue
 	pushq   %rbp 
 	movq 	%rsp, %rbp
+
+	cmpb	$0,	d_pressed
+	je      epilogue_move_right
+
 
 	incb	player_position_x
 	movb 	game_frame_x, %al
@@ -207,7 +268,8 @@ do_animation:
 	jne     epilogue # if y is not -1 we still have an animation going
 
 	# reached end of the animation
-	movb    $24, bullet_position_y  # intialize y to the bottom of the screen again
+	movb    bullet_initial_y_pos, %al
+	movb    %al, bullet_position_y  # intialize y to the bottom of the screen again
 	movb	$0, start_anim
 
 epilogue:		
