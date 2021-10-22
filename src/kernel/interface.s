@@ -20,6 +20,9 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .global setTimer
 .global putChar
 .global readKeyCode
+.global unmuteSpeaker
+.global muteSpeaker
+.global playFrequency
 
 .section .kernel
 
@@ -104,4 +107,28 @@ readKeyCode:
 	movq	%rbp, %rsp
 	popq	%rbp
 	ret
+
+
+muteSpeaker:
+    inb $0x61, %al
+    andb $0b11111100, %al # Maybe last bit is 0 as well
+    outb %al, $0x61
+    ret
+
+unmuteSpeaker:
+    inb $0x61, %al
+    orb $0b00000011, %al # Maybe last bit is 1 as well
+    outb %al, $0x61
+    ret
+
+playFrequency:
+    # INPUT: RDI=frequency to play
+    movb $0xb6, %al # Select PIT channel2 (pc speaker)
+    outb %al, $0x43 # Send command to control channel
+    movq %rdi, %rax # Store frequency in rax
+    # Write the frequency to channel 2
+    outb %al, $0x42
+    xchgb %al, %ah
+    outb %al, $0x42
+    ret
 
