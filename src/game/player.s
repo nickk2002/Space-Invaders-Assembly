@@ -45,16 +45,22 @@ player_input:
 	
 	call	readKeyCode
 
-	movq	$0, %rdi
-	cmpb 	$0x1E, %al 		# A was pressed
+	movq	$0, %rsi
+    movq $0x1E, %rdi
+    call isKeyDown
+	cmpb 	$1, %al 		# A was pressed
 	je 		switch
 
-	incq	%rdi
-	cmpb 	$0x20, %al 		# D was pressed
+	incq	%rsi
+    movq $0x20, %rdi
+    call isKeyDown
+	cmpb 	$1, %al 		# D was pressed
 	je 		switch
 
-	incq	%rdi
-	cmpb 	$0x11, %al 		# W was pressed
+	incq	%rsi
+    movq $0x11, %rdi
+    call isKeyUp
+	cmpb 	$1, %al 		# W was pressed
 	je 		switch
 
 	epilogue_player_input:
@@ -73,9 +79,9 @@ player_input:
 
     # switch case
     switch:
-	    shlq 	$3, %rdi               # multiply %rax by 8
-	    movq 	jumptable(%rdi), %rdi  # copy the address of the subroutine selected by switch to %rax
-	    call 	*%rdi                  # call the subroutine stored at the address which is in %rax
+	    shlq 	$3, %rsi               # multiply %rax by 8
+	    movq 	jumptable(%rsi), %rsi  # copy the address of the subroutine selected by switch to %rax
+	    call 	*%rsi                  # call the subroutine stored at the address which is in %rax
 	    jmp 	epilogue_player_input  # jump back to the body of the loop to finish the iteration
 
 
