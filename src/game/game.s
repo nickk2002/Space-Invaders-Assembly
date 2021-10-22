@@ -47,6 +47,7 @@ gameLoop:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
+    call muteSpeaker
 	call 	clear_screen
 	call 	player_input
 	call 	print_player_position

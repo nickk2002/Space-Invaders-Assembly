@@ -159,6 +159,9 @@ player_shoot:
 	# we did press Z
 	# we mark start_anim true
 	movb $1, start_anim
+    movq $2000, %rdi
+    call playFrequency
+    call unmuteSpeaker
 	
 	# we call the animation either way because the animation checks the start_anim value
 	// call do_animation
