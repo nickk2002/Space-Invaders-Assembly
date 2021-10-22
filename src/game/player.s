@@ -278,8 +278,6 @@ epilogue:
 
 	ret
 
-# getter for information about player's ship position
-
 # rax - index of the ship that was hit; if there was no ship hit returns -1
 detectCollision:
 	# prologue
