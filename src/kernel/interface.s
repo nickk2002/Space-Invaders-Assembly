@@ -23,6 +23,8 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .global unmuteSpeaker
 .global muteSpeaker
 .global playFrequency
+.global isKeyDown
+.global isKeyUp
 
 .section .kernel
 
@@ -132,3 +134,10 @@ playFrequency:
     outb %al, $0x42
     ret
 
+isKeyDown:
+    call ps2_is_key_down
+    ret
+
+isKeyUp:
+    call ps2_is_key_up
+    ret

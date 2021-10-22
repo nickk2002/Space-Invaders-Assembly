@@ -41,6 +41,9 @@ code_set1:	.byte 0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=
 			.byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 			.byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
+key_states:
+    .skip 128
+
 .section .kernel
 
 init_ps2:
@@ -79,6 +82,12 @@ init_ps2:
 	mov		$ps2_init_done_str, %r8
 	#call	printf
 
+    # Initialize the key_states to zero
+    movq $127, %rcx
+ps2_reset_key_states:
+    movb $0, key_states(%rcx)
+    loop ps2_reset_key_states
+
 	leave
 	ret
 
@@ -99,16 +108,26 @@ ps2_bottom_half:
 	enter	$0, $0
 	push	%rax
 
-	mov		$0, %rax
+	movq	$0, %rax
 	in		$PS2_DATA, %al
+    # PS2 scan code is now in AL
 	bt		$7, %rax			# TODO this way we only handle presses, not releases for now
-	jc		9f
+	jc		ps2_set_key_release
 	mov		read_bytes, %rbx
 	shl		$8, %rbx
 	mov		%al, %bl
 	mov		%rbx, read_bytes
+    andb $0b01111111, %al # Remove key press/release indicator
 
-9:
+ps2_set_key_down:
+    movb $1, key_states(%rax)
+    jmp ps2_finish_processing
+
+ps2_set_key_release:
+    andb $0b01111111, %al # Remove key press/release indicator
+    movb $2, key_states(%rax)
+
+ps2_finish_processing:
 	pop		%rax
 	leave
 	ret
@@ -144,4 +163,36 @@ ps2_translate_scancode:
 	pop		%rax
 	leave
 	ret
+
+ps2_is_key_down:
+    # INPUT: DIL=scan code of the key (can be the pressed or released version)
+    andb $0b01111111, %dil # Remove key press/release indicator
+    movb key_states(%rdi), %al # Get the state of the key
+    cmpb $1, %al
+    je signal_key_down
+    movq $0, %rax
+    jmp ps2_is_key_down_finish
+
+signal_key_down:
+    movq $1, %rax
+    movb $0, key_states(%rdi)
+
+ps2_is_key_down_finish:
+    ret
+
+ps2_is_key_up:
+    # INPUT: DIL=scan code of the key (can be the pressed or released version)
+    andb $0b01111111, %dil # Remove key press/release indicator
+    movb key_states(%rdi), %al # Get the state of the key
+    cmpb $2, %al
+    je signal_key_up
+    movq $0, %rax
+    jmp ps2_is_key_up_finish
+
+signal_key_up:
+    movq $1, %rax
+    movb $0, key_states(%rdi)
+
+ps2_is_key_up_finish:
+    ret
 
