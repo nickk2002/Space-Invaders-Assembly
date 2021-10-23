@@ -32,6 +32,7 @@ is_game_started_return:
 
 
 handle_option1:
+    # TODO: the game doesn't start if other options were used before
     # Game loop is going to detect this option and run the game
     # So nothing to print here
 	ret 

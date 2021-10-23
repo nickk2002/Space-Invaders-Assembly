@@ -135,7 +135,6 @@ print_pattern:
 			pushq %rdx
 			pushq %rcx
 
-
 			# RDI(dil) -> x 
 			# RSI(sil) -> y
 			# RDX -> character

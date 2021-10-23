@@ -23,20 +23,21 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .global gameLoop
 
 .section .game.data
+is_first_run: .byte 1
 
 .section .game.text
 
 gameInit:
 	# set the timer to 1193182/39772 = 30 fps 
-	movq 	$39772, %rdi 
-	call 	setTimer # set timer 30 fps I think?
-
 	call 	player_init
 
 	call 	enemy_creation
 
 	# clear the screen
 	call 	clear_screen
+
+    # TODO fix this
+    /*call timer_init*/
 
 	ret
 
@@ -47,12 +48,39 @@ gameLoop:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
+    call muteSpeaker
+	call clear_screen
+
+    call is_game_started
+    cmpb $1, %al
+    je game_loop_running
+
+    call main_menu_handle
+    jmp game_loop_end
+
+game_loop_running:
+    cmpb $1, is_first_run
+    jne not_first_run
+    movb $0, is_first_run
+
+    # Do things here when game is launched from the main menu for the first time
+    movq $0, %rdi
+reset_keypress_info:
+    cmp $128, %rdi
+    je not_first_run
+    call isKeyUp
+    incq %rdi
+    jmp reset_keypress_info
+
+not_first_run:
+
     call 	muteSpeaker
 	call 	clear_screen
 	call 	player_loop
-	call 	print_all_enemy_ships
+    call 	print_all_enemy_ships
 	call 	detect_collision_enemy_bullet
 
+game_loop_end:
 	# epilogue
 	movq    %rbp, %rsp
 	popq    %rbp 

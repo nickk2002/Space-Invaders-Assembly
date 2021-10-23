@@ -38,7 +38,7 @@ init_PIC:
 	enter	$0, $0
 
 	mov		$PIC_init_str, %r8
-	#call	printf
+	// call	printf
 
 # IMCR clear: TODO needed? depends on MP table info it seems...
 	mov		$0x70, %al
@@ -160,7 +160,7 @@ pic_irq_0_handler:
 	#pop		%r8
 
 	#call	gui_mainloop
-	call	gameLoop
+	call    handle_timer
 
 	call	master_eoi
 #	pop		%r8
