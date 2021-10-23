@@ -51,6 +51,7 @@ gameLoop:
 	call 	clear_screen
 	call 	player_loop
 	call 	print_all_enemy_ships
+	call 	detect_collision_enemy_bullet
 
 	# epilogue
 	movq    %rbp, %rsp

@@ -1,6 +1,6 @@
 .file "src/game/player.s"
 
-.global player_init, print_player_position,player_loop
+.global player_init, print_player_position, player_loop, player_position_x, player_position_y, player_size
 
 .section .game.text
 	player_appearance: .asciz "/-^-\\"
@@ -290,7 +290,7 @@ detectCollision:
 	movq 	number_of_ships, %r15
 	collision_loop:
 		cmpq 	$1, %rax
-		je 		collision_epilogue
+		jge		collision_epilogue
 
 		cmpq 	$-1, %r15
 		je 		collision_epilogue
