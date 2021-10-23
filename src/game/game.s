@@ -23,6 +23,7 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .global gameLoop
 
 .section .game.data
+is_first_run: .byte 1
 
 .section .game.text
 
@@ -47,11 +48,35 @@ gameLoop:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
-    // call 	muteSpeaker
-	call 	clear_screen
-	call 	player_loop
-	call 	print_all_enemy_ships
+    call muteSpeaker
+	call clear_screen
 
+    call is_game_started
+    cmpb $1, %al
+    je game_loop_running
+
+    call main_menu_handle
+    jmp game_loop_end
+
+game_loop_running:
+    cmpb $1, is_first_run
+    jne not_first_run
+    movb $0, is_first_run
+
+    # Do things here when game is launched from the main menu for the first time
+    movq $0, %rdi
+reset_keypress_info:
+    cmp $128, %rdi
+    je not_first_run
+    call isKeyUp
+    incq %rdi
+    jmp reset_keypress_info
+
+not_first_run:
+    call 	player_loop
+    call 	print_all_enemy_ships
+
+game_loop_end:
 	# epilogue
 	movq    %rbp, %rsp
 	popq    %rbp 
