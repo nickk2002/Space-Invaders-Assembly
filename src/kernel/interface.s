@@ -38,6 +38,7 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 # Note: this library uses the legacy PIT, which is not guaranteed to reach
 #       more than 100 Hz on physical machines. (100 Hz is typically used by
 #       operating systems to schedule processes.)
+# The maximum value of rdi is 2^16 - 1
 setTimer:
 	pushq	%rbp
 	movq	%rsp, %rbp

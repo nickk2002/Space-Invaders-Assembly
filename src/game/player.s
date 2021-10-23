@@ -45,23 +45,6 @@ player_init:
 	ret
 
 
-handle_switch_statement:
-
-	# prologue
-	pushq   %rbp 
-	movq 	%rsp, %rbp
-  	# switch case
-    shlq 	$3, %rsi               # multiply %rax by 8
-    movq 	jumptable(%rsi), %rsi  # copy the address of the subroutine selected by switch to %rax
-    call 	*%rsi                  # call the subroutine stored at the address which is in %rax
-
-
-	# epilogue		
-	movq    %rbp, %rsp
-	popq 	%rbp
-    ret 
-
-
 player_loop:
 	
 	call    player_move_left
@@ -225,15 +208,13 @@ player_shoot:
 
 	# we did press Z
 	# we mark start_anim true
-	movb $1, start_anim
-    movq $2000, %rdi
-    call playFrequency
-    call unmuteSpeaker
-    movq $500, %rdi
-    call playFrequency
+	movb 	$1, start_anim
+    movq 	$2000, %rdi
+    call 	playFrequency
+    call 	unmuteSpeaker
+    movq 	$500, %rdi
+    call 	playFrequency
 	
-	# we call the animation either way because the animation checks the start_anim value
-	// call do_animation
 
 	# epilogue		
 	movq    %rbp, %rsp

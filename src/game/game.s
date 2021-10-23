@@ -27,15 +27,11 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .section .game.text
 
 gameInit:
-	# set the timer to 1193182/39772 = 30 fps 
-	movq 	$39772, %rdi 
-	call 	setTimer # set timer 30 fps I think?
 
 	call 	player_init
 
 	call 	enemy_creation
 
-	# clear the screen
 	call 	clear_screen
 
 	ret
@@ -47,11 +43,12 @@ gameLoop:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
-    // call 	muteSpeaker
 	call 	clear_screen
+
+    // call 	muteSpeaker
 	call 	player_loop
 	call 	print_all_enemy_ships
-
+	// call 	do_timer
 	# epilogue
 	movq    %rbp, %rsp
 	popq    %rbp 
