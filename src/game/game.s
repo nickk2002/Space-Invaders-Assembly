@@ -47,7 +47,7 @@ gameLoop:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
-    // call 	muteSpeaker
+    call 	muteSpeaker
 	call 	clear_screen
 	call 	player_loop
 	call 	print_all_enemy_ships
