@@ -21,12 +21,13 @@
 - [ ] Simple method to play list of frequencies
 
 ## Menu
-- [ ] Make the menu appear on start
+- [x] Make the menu appear on start
 - [ ] Make the menu appear after the player wins
-- [ ] Option 1 *New game* should start a new game
-- [ ] Option 2 *Tutorial* should show a static screen explaining controls, and game info
-- [ ] Option 3 *Difficulty* should set the difficulty
+- [x] Option 1 *New game* should start a new game
+- [x] Option 2 *Tutorial* should show a static screen explaining controls, and game info
+- [x] Option 3 *Difficulty* should set the difficulty
 - [ ] Option 4 *Quit* should quit the game
+- [ ] *Optional* Make the menu nicer (highlight, select with arrows, press enter to choose option)
 
 ## Scores
 - [ ] Assign score the each enemy. Make destorying the enemy reward scores
