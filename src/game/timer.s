@@ -7,7 +7,7 @@
 
 	current_timer:   .quad 0
 
-	main_loop_fps:   .quad 120
+	main_loop_fps:   .quad 240
 
 	game_loop_fps: 	.quad 30 
 
@@ -39,7 +39,7 @@ add_timer:
 	divq	%rdi # divide main_loop / rdi(timer in the argument) 
 
 	# the division result is stored into %rax
-	movq	%rax, (%rcx) 
+    movq %rax, (%rcx) 
 
 	movq	%rsi, 8(%rcx) # we store function
 
@@ -61,14 +61,14 @@ get_timer_at_pos:
 	xorq	%rax,%rax
 	movb	timer_attributes, %al 
 	mulb	%dil 
-	addq	timer_array, %rax
+	addq	$timer_array, %rax
 	ret 
 
 
 
 timer_init:
 	# timer_pointer point to the array
-	movq	timer_array,%rax 
+	movq	$timer_array,%rax 
 	movq	%rax,timer_pointer # timer_pointer = timer_array
 	
 
@@ -78,13 +78,13 @@ timer_init:
 	# set main counter according to main_loop_fps
 	movq	$0,%rdx
 	movq 	constant_value, %rax 
-	divq	game_loop_fps
+	divq	main_loop_fps
 	movq	%rax, %rdi 
 	call    setTimer # set the timer according to the main_loop_fps 
 
 
 	movq	game_loop_fps, %rdi 
-	movq	gameLoop, %rsi  
+	movq	$gameLoop, %rsi  
 	call    add_timer
 
 	# game division = main_loop/game_loop
@@ -106,7 +106,7 @@ handle_timer:
 	incq	current_timer
 
 	movq	current_timer, %rax 
-	cmpq 	%rax,main_loop_fps # check if we have reached the main loop fps
+	cmpq 	%rax, main_loop_fps # check if we have reached the main loop fps
 	jne 	dont_reset_timer  
 	# we reset the timer the timder since current_timer is main_loop_fps
 	movq    $0, current_timer
@@ -124,27 +124,17 @@ handle_timer:
 		// // # we have the pointer to the array
 		call    get_timer_at_pos
 
-		movq	timer_array,%rcx  # store address into rcx
+		movq	%rax, %rcx  # store address into rcx
 		
 		movq	current_timer,%rax 
 		movq	$0, %rdx
 		divq	(%rcx)  # timer division we have
 		cmpq	$0, %rdx # compare the modulo
-		call    gameLoop
-
-		pushq	%rdi 
-		movq	$10, %rdi 
-		movq	$10, %rsi 
-		movb	(%rcx), %dl 
-		addb	$0x30,	%dl
-		movq	$0x0f,  %rcx
-		call 	putChar
 
 		jne		continue_loop_timers
 
-		popq	%rdi 
 		# we call the function
-		// call    *8(%rcx)
+        call    *8(%rcx)
 
 		continue_loop_timers:
 		incq	%rdi
