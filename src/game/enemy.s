@@ -222,7 +222,7 @@ enemy_bullet_animation:
 
 		# reached end of the animation
 		movb 	$1, 6(%r14)			# hard coded enemy_bullet_initial_y_pos
-		movb 	$0, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
+		movb 	$1, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
 
 		enemy_bullet_continue:
 			decq 	%r15
@@ -238,7 +238,7 @@ enemy_bullet_animation:
 
 		ret
 
-# rax - index of the ship that hit the player's ship; if there was no hit returns -1
+# rax - index of the player's the ship that hit ship; if there was no hit returns -1
 detect_collision_enemy_bullet:
 	# prologue
 	pushq   %rbp 
@@ -273,7 +273,8 @@ detect_collision_enemy_bullet:
 		jg  	enemy_bullet_collision_no
 
 		enemy_bullet_collision_yes:
-			addb 	$5, player_position_x
+			// addb 	$5, player_position_x
+			call    decrease_one_life
 
 			movq 	%r15, %rax
 			jmp 	epilogue_dceb

@@ -2,10 +2,15 @@
 
 .global player_init, print_player_position, player_loop, player_position_x, player_position_y, player_size
 
+.global decrease_one_life
+
 .section .game.text
 	player_appearance: .asciz "/-^-\\"
+	player_hp_message: .asciz "HP: "
+	player_dead_message: .asciz "Player is dead right now"
 
-.data
+
+.section .game.data
 	player_size: .byte 1
 
 	bullet_initial_y_pos: .byte 23 
@@ -20,11 +25,37 @@
 	a_pressed: .byte 0 
 	d_pressed: .byte 0
 
+	nr_lives: .byte 3
+	player_dead: .byte 0
+
 # jumptable containing the addresses of the subroutines selected by the switch
 	jumptable:
 	    .quad player_shoot
 	    .quad player_move_left
 	    .quad player_move_right
+
+
+
+
+print_nr_lives:
+
+	
+	movq	$1, %rdi 
+	movq	$23, %rsi 
+	movq	$player_hp_message, %rdx
+	movq	$0x0f,	%rcx 
+	call    print_pattern
+
+
+	movq	$5, %rdi 
+	movq	$23, %rsi 
+	movq	nr_lives, %rdx
+	addq 	$0x30, %rdx
+	movq	$0x0f,	%rcx 
+	call    putChar
+
+	ret 
+
 
 player_init:
 	# prologue
@@ -46,12 +77,28 @@ player_init:
 
 
 player_loop:
-	
+	# print nr_lives
+	call    print_nr_lives
+
+	cmpb	$1, player_dead 
+	jne     player_not_dead
+
+	movq	$10, %rdi 
+	movq	$20, %rsi 
+	movq	$player_dead_message, %rdx 
+	movb    $0x0f, %cl 
+	call   	print_pattern
+
+	jmp 	end_player_loop
+
+player_not_dead:
+
 	call    player_move_left
 	call    player_move_right
 	call 	print_player_position
 	call 	player_input
 	call 	do_animation
+end_player_loop:
 
 	ret 
 player_input:
@@ -75,7 +122,7 @@ player_input:
 	cmpb 	$1, %al 		# A was pressed down
 	
 	jne     did_not_press_down_a
-	movq	$1,a_pressed	# a was pressed
+	movb	$1,a_pressed	# a was pressed
 
 	did_not_press_down_a:
 	movq 	$0x1E, %rdi
@@ -83,7 +130,7 @@ player_input:
 	cmpb 	$1, %al 		# A was was released
 	
 	jne     did_not_release_a
-	movq	$0,a_pressed	# a was released so 'a' is not pressed anymore
+	movb	$0,a_pressed	# a was released so 'a' is not pressed anymore
 
 	did_not_release_a:
 
@@ -93,7 +140,7 @@ player_input:
 	cmpb 	$1, %al 		# D was pressed down
 	
 	jne     did_not_press_down_d
-	movq	$1,d_pressed	# d was pressed
+	movb	$1,d_pressed	# d was pressed
 
 	did_not_press_down_d:
 	movq 	$0x20, %rdi
@@ -101,7 +148,7 @@ player_input:
 	cmpb 	$1, %al 		# D was was released
 	
 	jne     did_not_release_d
-	movq	$0,d_pressed	# d was released so d is not pressed anymore
+	movb	$0,d_pressed	# d was released so d is not pressed anymore
 
 	did_not_release_d:
 
@@ -147,6 +194,22 @@ player_move_left:
 		movq    %rbp, %rsp
 		popq 	%rbp
 		ret
+
+decrease_one_life:
+	cmpb    $0, nr_lives
+	je      end_descrease_lives
+
+	decb 	nr_lives
+	cmpb	$0, nr_lives
+	jne		end_descrease_lives
+
+	# player died he has 0 lives
+	movb    $1, player_dead
+	jmp     end_descrease_lives
+
+	end_descrease_lives:
+
+	ret 
 
 player_move_right:
 	# prologue

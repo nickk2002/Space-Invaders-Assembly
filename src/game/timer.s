@@ -7,7 +7,7 @@
 
 	current_timer:   .quad 0 # keeps track of the current timer of the main_loop
 							 # can be in the range [0, main_loop_fps - 1]
-	main_loop_fps:   .quad 120 # how fast does the main loop go
+	main_loop_fps:   .quad 30 # how fast does the main loop go
 
 	game_loop_fps: 	.quad 30 # how fast does the game_loop go
 
@@ -92,7 +92,7 @@ timer_init:
 	movq	$gameLoop, %rsi  
 	call    add_timer
 
-	// movq	$30, %rdi 
+	// movq	$10, %rdi 
 	// movq	$player_loop, %rsi  
 	// call    add_timer
 
