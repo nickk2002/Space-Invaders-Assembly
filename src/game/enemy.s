@@ -11,7 +11,14 @@
 	number_of_ships: .quad 0
 	attribute_count: .quad 8
 
-.global enemy_test, number_of_ships, get_ship_at_position,print_all_enemy_ships, enemy_shoot
+.global enemy_test, number_of_ships, get_ship_at_position, enemy_loop
+
+enemy_loop:
+	call print_all_enemy_ships
+	call detect_collision_enemy_bullet
+	call detect_collision_two_bullets
+
+	ret
 
 # Creates a ship that has the following attributes
 # rdi: x -> top left x coord
@@ -222,7 +229,7 @@ enemy_bullet_animation:
 
 		# reached end of the animation
 		movb 	$1, 6(%r14)			# hard coded enemy_bullet_initial_y_pos
-		movb 	$0, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
+		movb 	$1, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
 
 		enemy_bullet_continue:
 			decq 	%r15
@@ -273,7 +280,7 @@ detect_collision_enemy_bullet:
 		jg  	enemy_bullet_collision_no
 
 		enemy_bullet_collision_yes:
-			addb 	$5, player_position_x
+			addb 	$0, player_position_x
 
 			movq 	%r15, %rax
 			jmp 	epilogue_dceb
@@ -286,6 +293,68 @@ detect_collision_enemy_bullet:
 			jmp 	dceb_loop
 
 	epilogue_dceb:
+		# epilogue
+		movq    %rbp, %rsp
+		popq 	%rbp
+
+# rax - index of the ship that hit the player's bullet; if there was no hit returns -1
+detect_collision_two_bullets:
+	# prologue
+	pushq   %rbp 
+	movq 	%rsp, %rbp
+
+	movq 	number_of_ships, %r15
+	decq 	%r15
+
+	movq 	$0, %rax
+	dctb_loop:
+		cmpq 	$1, %rax
+		jge		epilogue_dctb
+
+		cmpq 	$-1, %r15		# loop guard
+		je 		epilogue_dctb
+
+		# get the ship
+		movq	%r15, %rdi
+		call 	get_ship_at_position
+		movq 	%rax, %r14
+
+		# check collision
+		movb 	bullet_position_y, %sil
+		cmpb 	%sil, 6(%rax)
+		jle  	two_bullets_collision_no
+
+		movb 	bullet_position_x, %sil
+		addb 	$2, %sil 					# hard coded cannon position
+		cmpb 	%sil, 5(%rax)
+		jne  	two_bullets_collision_no
+
+		cmpb 	$1, start_anim
+		jne 	two_bullets_collision_no
+
+		two_bullets_collision_yes:
+			// # move the player 5 to the right
+			// addb 	$5, player_position_x
+
+			# end player bullet animation
+			movb    bullet_initial_y_pos, %al
+			movb    %al, bullet_position_y  # intialize y to the bottom of the screen again
+			movb	$0, start_anim
+
+			# end enemy bullet animation
+			movb 	$1, 6(%r14)			# hard coded enemy_bullet_initial_y_pos
+
+			movq 	%r15, %rax
+			jmp 	epilogue_dctb
+
+		two_bullets_collision_no:
+			movq 	$-1, %rax
+
+		dctb_loop_finish:
+			decq 	%r15
+			jmp 	dctb_loop
+
+	epilogue_dctb:
 		# epilogue
 		movq    %rbp, %rsp
 		popq 	%rbp
