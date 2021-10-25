@@ -76,8 +76,7 @@ not_first_run:
     call 	muteSpeaker
 	call 	clear_screen
 	call 	player_loop
-    call 	print_all_enemy_ships
-	call 	detect_collision_enemy_bullet
+    call 	enemy_loop
 
 game_loop_end:
 	# epilogue

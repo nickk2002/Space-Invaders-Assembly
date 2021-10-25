@@ -1,6 +1,6 @@
 .file "src/game/player.s"
 
-.global player_init, print_player_position, player_loop, player_position_x, player_position_y, player_size
+.global player_init, print_player_position, player_loop, player_position_x, player_position_y, player_size, bullet_position_x, bullet_position_y, start_anim
 
 .global decrease_one_life
 
@@ -296,7 +296,7 @@ do_animation:
 	je      epilogue # if it is 0 jump to epilogue
 
 	# check if there is a collision
-	call  	detectCollision
+	call  	detect_collision_player_bullet
 
 	# print character 'A' at coords (x,y)
 	movb 	bullet_position_x, 	%dil 
@@ -323,7 +323,7 @@ epilogue:
 	ret
 
 # rax - index of the ship that was hit; if there was no ship hit returns -1
-detectCollision:
+detect_collision_player_bullet:
 	# prologue
 	pushq   %rbp 
 	movq 	%rsp, %rbp
@@ -365,7 +365,7 @@ detectCollision:
 		jl 		collision_no
 
 		collision_yes:
-			addb 	$5, (%rax)
+			addb 	$0, (%rax)
 			movq 	%r15, %rax
 			jmp 	finish_collision_loop
 
@@ -385,3 +385,4 @@ detectCollision:
 		popq 	%rbp
 
 		ret
+
