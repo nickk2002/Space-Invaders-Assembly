@@ -9,11 +9,12 @@
 	enemy_array: .skip 1024
 	current_pointer: .quad 0
 	number_of_ships: .quad 0
-	attribute_count: .quad 8
+	attribute_count: .quad 12
 
 .global enemy_test, number_of_ships, get_ship_at_position, enemy_loop
 
 enemy_loop:
+	call print_score
 	call print_all_enemy_ships
 	call detect_collision_enemy_bullet
 	call detect_collision_two_bullets
@@ -29,7 +30,10 @@ enemy_loop:
 # r9:  x coord of the bullet
 # r10: y coord of the bullet
 # r11: boolean shot; true if shoot animation should be performed/ is being performed
-# r11:  the health of the ship
+# stack-parameter1: the health of the ship
+# stack-parameter2: colour of the ship
+# stack-parameter3: movement boolean of the ship; 0 - moves, 1 - does not move
+# stack-parameter4: points for killing this ship
 # we use the current_pointer as the memeory position
 # return the next free position
 create_ship:
@@ -49,8 +53,16 @@ create_ship:
 	movb    %r9b, 5(%r15) # x coord of the bullet
 	movb    %r10b, 6(%r15) # y coord of the bullet
 	movb 	%r11b, 7(%r15) # shooting boolean
+	movb 	16(%rbp), %sil
+	movb 	%sil, 8(%r15) # health
+	movb 	24(%rbp), %sil
+	movb 	%sil, 9(%r15) # colour
+	movb 	32(%rbp), %sil
+	movb 	%sil, 10(%r15) # movement boolean
+	movb 	40(%rbp), %sil
+	movb 	%sil, 11(%r15) # movement boolean
 
-	movq    8(%r15), %rax # the next free position
+	movq    12(%r15), %rax # the next free position
 
 	movq	attribute_count, %rsi
 	addq	%rsi, current_pointer 	 # next free position 
@@ -82,6 +94,10 @@ create_basic_ship:
 	addb	%dil, %r9b # x coord bullet
 	movb 	$1,  %r10b # y coord bullet
 	movb 	$1, %r11b # shooting by default
+	pushq 	$1 # points for killing the ship
+	pushq 	$0 # no movement by default
+	pushq 	$2 # colour
+	pushq 	$3 # 3 hp
 	call    create_ship
 
 	# epilogue
@@ -151,18 +167,32 @@ print_ships:
 	print_ships_loop:
 		cmpq	$0, %rcx 
 		je 		end_ships_loop
+		cmpb 	$0, 8(%r15)
+		jle  	print_ships_loop_finish
+
 		pushq	%rcx 
 
 		movb	(%r15), 	 %dil # x
 		movb    1(%r15),     %sil # y
 		movq    $enemy_ship, %rdx # the pattern of our ship
-		movb    $0x04,       %cl # color 
+		movb    9(%r15),       %cl # color 
 		call    print_pattern
 
+		# print enemy's hp
+		movb	(%r15), 	 %dil # x
+		addb 	$6, %dil
+		movb    1(%r15),     %sil # y
+		movq   	8(%r15), %rdx # the pattern of our ship
+		addq 	$48, %rdx
+		movb    9(%r15),       %cl # color 
+		call    putChar
+
 		popq 	%rcx
-		decq	%rcx
-		addq	attribute_count, %r15
-		jmp 	print_ships_loop
+
+		print_ships_loop_finish:
+			decq	%rcx
+			addq	attribute_count, %r15
+			jmp 	print_ships_loop
 			
 	end_ships_loop:
 	call 	enemy_bullet_animation
@@ -211,7 +241,9 @@ enemy_bullet_animation:
 		call 	get_ship_at_position
 		movq 	%rax, %r14
 		cmpb 	$0, 7(%r14)		# check if bullet shooting boolean is 0
-		je      enemy_bullet_continue # if it is 0 jump to epilogue
+		je      enemy_bullet_continue # if it is 0 jump to continue
+		cmpb 	$0, 8(%r14)		# check if enemy ship is alive (health > 0)
+		jle     enemy_bullet_continue # if it is 0 jump to continue
 
 		# print character 'V' at coords (x,y)
 		movb	6(%r14), %sil 	# y bullet position
@@ -359,3 +391,19 @@ detect_collision_two_bullets:
 		popq 	%rbp
 
 		ret
+
+print_score:
+	// movq	$1, %rdi 
+	// movq	$22, %rsi 
+	// movq	$player_hp_message, %rdx
+	// movq	$0x0f,	%rcx 
+	// call    print_pattern
+
+	// movq	$5, %rdi 
+	// movq	$22, %rsi 
+	// movq	nr_lives, %rdx
+	// addq 	$0x30, %rdx
+	// movq	$0x0f,	%rcx 
+	// call    putChar
+
+	ret 

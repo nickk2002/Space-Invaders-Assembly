@@ -25,7 +25,7 @@
 	a_pressed: .byte 0 
 	d_pressed: .byte 0
 
-	nr_lives: .byte 3
+	nr_lives: .byte 9
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
@@ -365,7 +365,8 @@ detect_collision_player_bullet:
 		jl 		collision_no
 
 		collision_yes:
-			addb 	$0, (%rax)
+			addb 	$0x01, 9(%rax) # change the colour
+			decb 	8(%rax)	# decrement health
 			movq 	%r15, %rax
 			jmp 	finish_collision_loop
 
