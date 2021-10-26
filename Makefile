@@ -37,7 +37,7 @@ HD_img:
 	dd if=/dev/zero of=$@ count=512
 
 qemu: all
-	qemu-system-x86_64 -soundhw pcspk HD_img
+	qemu-system-x86_64 -serial stdio -soundhw pcspk HD_img
 
 kvm: all
 	qemu-system-x86_64 -enable-kvm -cpu host HD_img
