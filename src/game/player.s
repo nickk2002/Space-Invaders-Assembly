@@ -25,7 +25,7 @@
 	a_pressed: .byte 0 
 	d_pressed: .byte 0
 
-	nr_lives: .byte 9
+	nr_lives: .byte 255
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
@@ -38,14 +38,11 @@
 
 
 print_nr_lives:
-
-	
 	movq	$1, %rdi 
 	movq	$23, %rsi 
 	movq	$player_hp_message, %rdx
 	movq	$0x0f,	%rcx 
 	call    print_pattern
-
 
 	movq	$5, %rdi 
 	movq	$23, %rsi 
@@ -55,7 +52,6 @@ print_nr_lives:
 	call    putChar
 
 	ret 
-
 
 player_init:
 	# prologue
@@ -315,6 +311,8 @@ do_animation:
 	jne     epilogue # if y is not -1 we still have an animation going
 
 	# reached end of the animation
+	movb 	player_position_x, %al 
+	movb 	%al, bullet_position_x
 	movb    bullet_initial_y_pos, %al
 	movb    %al, bullet_position_y  # intialize y to the bottom of the screen again
 	movb	$0, start_anim

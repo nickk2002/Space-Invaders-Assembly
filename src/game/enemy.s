@@ -19,22 +19,22 @@
    	enemy_ship_type_2_height:  .byte 1
 	enemy_ship_type_2_canon_x:  .byte 5
 	
-	lose: .asciz "YOU LOST"
 .data
 	pos_y:  .quad 0
 	pos_x:	.quad 34
 	enemy_array: .skip 1024
 	current_pointer: .quad 0
 	number_of_ships: .quad 0
-	attribute_count: .quad 12
+	attribute_count: .quad 16
 
 .global number_of_ships, get_ship_at_position, enemy_loop
 
 enemy_loop:
-	call print_score
 	call print_all_enemy_ships
 	call detect_collision_enemy_bullet
 	call detect_collision_two_bullets
+	call hanlde_ships
+	call all_ships_killed
 
 	ret
 
@@ -82,7 +82,7 @@ create_ship:
 	movb 	40(%rbp), %sil
 	movb 	%sil, 11(%r15) # points
 
-	movq    12(%r15), %rax # the next free position
+	movq    16(%r15), %rax # the next free position
 
 
 
@@ -176,6 +176,14 @@ enemy_creation:
 	movb	$10, %dil  # x coord
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
+
+	// movb	$20, %dil  # x coord
+	// movb    $1, %sil  # ship type 1
+	// call    create_basic_ship
+
+	// movb	$30, %dil  # x coord
+	// movb    $1, %sil  # ship type 1
+	// call    create_basic_ship
 
 	movb	$40, %dil  # x coord
 	movb    $2, %sil  # ship type 1
@@ -466,18 +474,93 @@ detect_collision_two_bullets:
 
 		ret
 
-print_score:
-	// movq	$1, %rdi 
-	// movq	$22, %rsi 
-	// movq	$player_hp_message, %rdx
-	// movq	$0x0f,	%rcx 
-	// call    print_pattern
+# %rdi parameter - pointer to the ship
+delete_dead_ship:
+	# prologue
+	pushq   %rbp 
+	movq 	%rsp, %rbp
 
-	// movq	$5, %rdi 
-	// movq	$22, %rsi 
-	// movq	nr_lives, %rdx
-	// addq 	$0x30, %rdx
-	// movq	$0x0f,	%rcx 
-	// call    putChar
+	pushq 	%r15
 
-	ret 
+	movq 	%rdi, %r15
+	cmpb 	$0, 8(%r15) # check if the health is 0
+	jne		epilogue_dds
+
+	# delete the ship
+	// movb 	$-1, 8(%r15) # set health to -1 so that it does not trigger delete ship again
+	movq 	%r15, %rdi
+	call 	swap
+
+	decq 	number_of_ships
+
+	epilogue_dds:
+		popq 	%r15
+
+		# epilogue
+		movq    %rbp, %rsp
+		popq 	%rbp
+
+		ret
+
+hanlde_ships:
+	# prologue
+	pushq   %rbp 
+	movq 	%rsp, %rbp
+
+	pushq  	%r15
+
+	movq 	number_of_ships, %r15
+	decq 	%r15
+
+	handle_ships_loop:
+		cmpq 	$-1, %r15		# loop guard
+		je 		epilogue_handle_ships
+
+		# get the ship
+		movq	%r15, %rdi
+		call 	get_ship_at_position
+
+		movq 	%rax, %rdi
+		call 	delete_dead_ship
+
+		decq 	%r15
+		jmp 	handle_ships_loop
+
+	epilogue_handle_ships:
+		popq 	%r15
+
+		# epilogue
+		movq    %rbp, %rsp
+		popq 	%rbp
+
+		ret
+
+# parameter %rdi - the pointer to the ship to be swapped with the last one
+swap:
+	pushq 	%r15
+
+	movq 	%rdi, %r15
+
+	movq 	number_of_ships, %rdi
+	decq 	%rdi
+	call  	get_ship_at_position
+
+	movq 	(%r15), %rdi
+	xchgq 	%rdi, (%rax)
+	movq 	%rdi, (%r15)
+
+	movq 	8(%r15), %rdi
+	xchgq 	%rdi, 8(%rax)
+	movq 	%rdi, 8(%r15)
+
+	popq 	%r15
+	ret
+
+all_ships_killed:
+	cmpq 	$0, number_of_ships
+	jne epilogue_ask
+
+	call  	enemy_creation 	# create another wave
+
+	epilogue_ask:
+		ret
