@@ -1,7 +1,24 @@
 .file "src/game/enemy.s"
 
 .section .game.text
-	enemy_ship: .asciz "\\___/"
+
+	default_y_spawn_pos: .byte 4
+	enemy_ship_type_1: .asciz "\\__Y__/"
+	enemy_ship_type_2: .asciz "|___   ___|
+    | |"
+
+
+	ship_type_1: .byte 0  
+	enemy_ship_type_1_width:  .byte 7 
+	enemy_ship_type_1_height:   .byte 1
+	enemy_ship_type_1_canon_x: .byte 4
+
+
+	ship_type_2: .byte 0
+    enemy_ship_type_2_width: .byte 11
+   	enemy_ship_type_2_height:  .byte 1
+	enemy_ship_type_2_canon_x:  .byte 5
+	
 	lose: .asciz "YOU LOST"
 .data
 	pos_y:  .quad 0
@@ -11,7 +28,7 @@
 	number_of_ships: .quad 0
 	attribute_count: .quad 12
 
-.global enemy_test, number_of_ships, get_ship_at_position, enemy_loop
+.global number_of_ships, get_ship_at_position, enemy_loop
 
 enemy_loop:
 	call print_score
@@ -26,10 +43,11 @@ enemy_loop:
 # rsi: y -> top left y coord
 # rdx: width 
 # rcx: height
-# r8:  the type of the ship 0,1,2
+# r8:  the type of the ship
 # r9:  x coord of the bullet
 # r10: y coord of the bullet
 # r11: boolean shot; true if shoot animation should be performed/ is being performed
+# r12: the health of the ship
 # stack-parameter1: the health of the ship
 # stack-parameter2: colour of the ship
 # stack-parameter3: movement boolean of the ship; 0 - moves, 1 - does not move
@@ -49,10 +67,12 @@ create_ship:
 	movb	%sil, 1(%r15) # y coordinate
 	movb	%dl,  2(%r15) # width
 	movb 	%cl,  3(%r15) # height 
-	movb    %r8b, 4(%r15) # the type of the ship
+	movb    %r8b, 4(%r15) # type of the ship
 	movb    %r9b, 5(%r15) # x coord of the bullet
 	movb    %r10b, 6(%r15) # y coord of the bullet
 	movb 	%r11b, 7(%r15) # shooting boolean
+
+
 	movb 	16(%rbp), %sil
 	movb 	%sil, 8(%r15) # health
 	movb 	24(%rbp), %sil
@@ -60,9 +80,11 @@ create_ship:
 	movb 	32(%rbp), %sil
 	movb 	%sil, 10(%r15) # movement boolean
 	movb 	40(%rbp), %sil
-	movb 	%sil, 11(%r15) # movement boolean
+	movb 	%sil, 11(%r15) # points
 
 	movq    12(%r15), %rax # the next free position
+
+
 
 	movq	attribute_count, %rsi
 	addq	%rsi, current_pointer 	 # next free position 
@@ -79,21 +101,60 @@ create_ship:
 
 	ret
 
+
+
+# rdi -> ship type(1,2,3) byte
+# rax -> returns the pointer to the ship of that type
+
+get_ship_pointer_from_type:
+
+	movq	$0, %rax # pointer to the ship type
+	cmpb    $1, %dil   # check if the type of this is 1  
+	jne     ship_is_type_2
+
+	ship_is_type_1:
+	movq    $ship_type_1, %rax 
+	jmp 	end_ship_type_if_else
+
+	ship_is_type_2:
+	movq    $ship_type_2, %rax 
+	jmp 	end_ship_type_if_else
+	end_ship_type_if_else:
+
+	ret
+
 # returns the initial address into rax
 # rdi -> x position of the basic ship
+# rsi -> type of ship 
+# based on the type of the ship width, height will be set
+# also the life of the ship
 create_basic_ship:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
-	# rdi -> dil from the parameter
-	movb 	$0,  %sil #y
-	movb 	$5,  %dl  # width
-	movb    $1,  %cl  # height
-	movb    $0,  %r8b # type 0
-	movb 	$2, %r9b # hard coded cannon position displacement relative to x position of the ship
+	pushq 	%rdi 
+	movb    %sil, %dil 
+	call    get_ship_pointer_from_type
+	popq    %rdi 
+
+	pushq    %rsi 
+
+	# rdi -> dil from the parameter x coord
+	movb 	default_y_spawn_pos,  %sil # default value for y ship pos
+	movb    1(%rax), %dl # width
+	movb    2(%rax), %cl # height
+	movb    3(%rax), %r9b # canon position
+	popq 	%rax
+	movb    %al,  %r8b # type of the ship
 	addb	%dil, %r9b # x coord bullet
-	movb 	$1,  %r10b # y coord bullet
+
+	# calculate the y position of the bullet
+	# bullet_start_y = y pos ship + height
+	movb    %sil, %r10b  
+	addb    %cl, %r10b  
+
 	movb 	$1, %r11b # shooting by default
+
 	pushq 	$1 # points for killing the ship
 	pushq 	$0 # no movement by default
 	pushq 	$2 # colour
@@ -107,26 +168,18 @@ create_basic_ship:
 	ret
 
 enemy_creation:
-	pushq   %rbp 
-	movq 	%rsp, %rbp
-
 	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
 	movq	enemy_array,%rax 
 	movq	%rax,current_pointer
-
-	movb	$0, %dil  # x
+	
+	movb	$10, %dil  # x coord
+	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
-	movb	$40, %dil  # x
+	movb	$40, %dil  # x coord
+	movb    $2, %sil  # ship type 1
 	call    create_basic_ship
-
-	movb	$50, %dil  # x
-	call    create_basic_ship
-
-	# epilogue
-	movq    %rbp, %rsp
-	popq    %rbp 
 
 	ret
 
@@ -172,10 +225,24 @@ print_ships:
 
 		pushq	%rcx 
 
-		movb	(%r15), 	 %dil # x
-		movb    1(%r15),     %sil # y
-		movq    $enemy_ship, %rdx # the pattern of our ship
-		movb    9(%r15),       %cl # color 
+
+		movq	$0, %rax 
+		cmpb	$1, 4(%r15)  # check if the type is 1
+		jne     print_type_2
+		print_type_1:
+			movq    $enemy_ship_type_1,%rax    
+			jmp   	end_print_type
+
+		print_type_2:
+			movq    $enemy_ship_type_2,%rax    
+			jmp   	end_print_type
+
+		end_print_type:
+		movb	(%r15), %dil # x
+		movb    1(%r15),%sil # y
+		movq    %rax, %rdx 	# the pattern of our ship
+		movb    9(%r15), %cl # color 
+
 		call    print_pattern
 
 		# print enemy's hp
@@ -259,8 +326,12 @@ enemy_bullet_animation:
 		cmpb	$25, 6(%r14) 		 # compare 25 with y coord of the bullet
 		jl     enemy_bullet_continue # if y is less than 25 we still have an animation going
 
+		# calculate the intial bullet y
+		# y coord ship + height
+		movb    1(%r14), %al 
+		incb    %al 
 		# reached end of the animation
-		movb 	$1, 6(%r14)			# hard coded enemy_bullet_initial_y_pos
+		movb 	%al, 6(%r14)		# start y pos of bullet
 		movb 	$1, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
 
 		enemy_bullet_continue:
@@ -364,16 +435,19 @@ detect_collision_two_bullets:
 		jne 	two_bullets_collision_no
 
 		two_bullets_collision_yes:
-			// # move the player 5 to the right
-			// addb 	$5, player_position_x
 
 			# end player bullet animation
 			movb    bullet_initial_y_pos, %al
 			movb    %al, bullet_position_y  # intialize y to the bottom of the screen again
 			movb	$0, start_anim
 
-			# end enemy bullet animation
-			movb 	$1, 6(%r14)			# hard coded enemy_bullet_initial_y_pos
+
+			# calculate the intial bullet y
+			# y coord ship + height
+			movb    1(%r14), %al 
+			incb    %al 
+			# reached end of the animation
+			movb 	%al, 6(%r14)		# start y pos of bullet
 
 			movq 	%r15, %rax
 			jmp 	epilogue_dctb

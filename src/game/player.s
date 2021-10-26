@@ -1,6 +1,6 @@
 .file "src/game/player.s"
 
-.global player_init, print_player_position, player_loop, player_position_x, player_position_y, player_size, bullet_position_x, bullet_position_y, start_anim
+.global player_init, player_loop, player_position_x, player_position_y, player_size, bullet_position_x, bullet_position_y, start_anim
 
 .global decrease_one_life
 
@@ -97,6 +97,8 @@ player_not_dead:
 	call    player_move_right
 	call 	print_player_position
 	call 	player_input
+	# check if there is a collision
+	call  	detect_collision_player_bullet
 	call 	do_animation
 end_player_loop:
 
@@ -195,21 +197,7 @@ player_move_left:
 		popq 	%rbp
 		ret
 
-decrease_one_life:
-	cmpb    $0, nr_lives
-	je      end_descrease_lives
 
-	decb 	nr_lives
-	cmpb	$0, nr_lives
-	jne		end_descrease_lives
-
-	# player died he has 0 lives
-	movb    $1, player_dead
-	jmp     end_descrease_lives
-
-	end_descrease_lives:
-
-	ret 
 
 player_move_right:
 	# prologue
@@ -241,6 +229,22 @@ player_move_right:
 		movq    %rbp, %rsp
 		popq 	%rbp
 		ret
+
+decrease_one_life:
+	cmpb    $0, nr_lives
+	je      end_descrease_lives
+
+	decb 	nr_lives
+	cmpb	$0, nr_lives
+	jne		end_descrease_lives
+
+	# player died he has 0 lives
+	movb    $1, player_dead
+	jmp     end_descrease_lives
+
+	end_descrease_lives:
+
+	ret 
 
 print_player_position:
 	# prologue
@@ -295,8 +299,7 @@ do_animation:
 	cmpb    $0, start_anim
 	je      epilogue # if it is 0 jump to epilogue
 
-	# check if there is a collision
-	call  	detect_collision_player_bullet
+
 
 	# print character 'A' at coords (x,y)
 	movb 	bullet_position_x, 	%dil 
@@ -367,6 +370,12 @@ detect_collision_player_bullet:
 		collision_yes:
 			addb 	$0x01, 9(%rax) # change the colour
 			decb 	8(%rax)	# decrement health
+
+			movb    bullet_initial_y_pos, %al
+			movb    %al, bullet_position_y  # intialize y to the bottom of the screen again
+			movb	$0, start_anim
+
+			# collision detected with the ship
 			movq 	%r15, %rax
 			jmp 	finish_collision_loop
 
