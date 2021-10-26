@@ -1,24 +1,26 @@
 .file "src/game/player.s"
 
 .global player_init, player_loop, player_position_x, player_position_y, player_size, bullet_position_x, bullet_position_y, start_anim
-
+.global nr_lives
 .global decrease_one_life
 
 .section .game.text
 	player_appearance: .asciz "/-^-\\"
-	player_hp_message: .asciz "HP: "
 	player_dead_message: .asciz "Player is dead right now"
 
 
 .section .game.data
-	player_size: .byte 1
 
+	player_points: .quad 0 # player max value is huge
+
+	player_size: .byte 1
 	bullet_initial_y_pos: .byte 23 
 
 	player_position_x: .byte 40
 	player_position_y: .byte 24
 	bullet_position_x: .byte 40
 	bullet_position_y: .byte 23
+
 	start_anim: .byte 0
 	game_frame_x: .byte 80
 	game_frame_y: .byte 25
@@ -35,23 +37,6 @@
 	    .quad player_move_right
 
 
-
-
-print_nr_lives:
-	movq	$1, %rdi 
-	movq	$23, %rsi 
-	movq	$player_hp_message, %rdx
-	movq	$0x0f,	%rcx 
-	call    print_pattern
-
-	movq	$5, %rdi 
-	movq	$23, %rsi 
-	movq	nr_lives, %rdx
-	addq 	$0x30, %rdx
-	movq	$0x0f,	%rcx 
-	call    putChar
-
-	ret 
 
 player_init:
 	# prologue
@@ -73,8 +58,6 @@ player_init:
 
 
 player_loop:
-	# print nr_lives
-	call    print_nr_lives
 
 	cmpb	$1, player_dead 
 	jne     player_not_dead
@@ -253,12 +236,6 @@ print_player_position:
 	movb	$0x0f, %cl
 	call 	print_pattern
 
-	// movb 	player_position_x, %dil
-	// movb	player_position_y, %sil
-	// movb	$0x0f, %cl
-	// movb	$'M', %dl
-	// call	putChar
-
 	# epilogue		
 	movq    %rbp, %rsp
 	popq 	%rbp
@@ -307,7 +284,8 @@ do_animation:
 
 	# decrease y because we are going up 
 	decb    bullet_position_y
-	cmpb	$-1, bullet_position_y
+	movb    display_y_coord, %cl
+	cmpb	%cl, bullet_position_y
 	jne     epilogue # if y is not -1 we still have an animation going
 
 	# reached end of the animation
@@ -368,6 +346,23 @@ detect_collision_player_bullet:
 		collision_yes:
 			addb 	$0x01, 9(%rax) # change the colour
 			decb 	8(%rax)	# decrement health
+			cmpb    $0, 8(%rax)
+			jne     health_not_zero
+			# health is 0 right now
+			pushq   %rax
+			pushq	%rcx
+
+			movb    4(%rax), %dil
+			call    get_ship_pointer_from_type
+
+			movq    $0, %rcx 
+			movb    4(%rax), %cl  # the number of point of the ship is in rdi 
+			addq    %rcx, player_points
+
+			popq	%rcx
+			popq	%rax 
+
+			health_not_zero:
 
 			movb    bullet_initial_y_pos, %al
 			movb    %al, bullet_position_y  # intialize y to the bottom of the screen again

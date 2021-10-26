@@ -11,14 +11,15 @@
 	ship_type_1: .byte 0  
 	enemy_ship_type_1_width:  .byte 7 
 	enemy_ship_type_1_height:   .byte 1
-	enemy_ship_type_1_canon_x: .byte 4
-
+	enemy_ship_type_1_canon_x: .byte 3
+	enemy_ship_type_1_points:  .byte 1
 
 	ship_type_2: .byte 0
     enemy_ship_type_2_width: .byte 11
    	enemy_ship_type_2_height:  .byte 1
 	enemy_ship_type_2_canon_x:  .byte 5
-	
+	enemy_ship_type_2_points:  .byte 3
+
 .data
 	pos_y:  .quad 0
 	pos_x:	.quad 34
@@ -167,7 +168,7 @@ create_basic_ship:
 
 	ret
 
-enemy_creation:
+enemy_wave_2:
 	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
 	movq	enemy_array,%rax 
@@ -177,16 +178,32 @@ enemy_creation:
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
-	// movb	$20, %dil  # x coord
-	// movb    $1, %sil  # ship type 1
-	// call    create_basic_ship
+	movb	$20, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
 
-	// movb	$30, %dil  # x coord
-	// movb    $1, %sil  # ship type 1
-	// call    create_basic_ship
+	movb	$30, %dil  # x coord
+	movb    $2, %sil  # ship type 2
+	call    create_basic_ship
 
-	movb	$40, %dil  # x coord
-	movb    $2, %sil  # ship type 1
+	movb	$50, %dil  # x coord
+	movb    $2, %sil  # ship type 2
+	call    create_basic_ship
+
+	ret
+
+enemy_wave_1:
+	movq	$0, number_of_ships
+	# current_pointer <- enemy_array
+	movq	enemy_array,%rax 
+	movq	%rax,current_pointer
+	
+	movb	$10, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb	$20, %dil  # x coord
+	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
 	ret
@@ -322,8 +339,18 @@ enemy_bullet_animation:
 
 		# print character 'V' at coords (x,y)
 		movb	6(%r14), %sil 	# y bullet position
+
+
+		pushq	%rax
+		movb    4(%r14), %dil # type of the ship
+		call 	get_ship_pointer_from_type 
+		# we have the ship pointer into rax ($ship1, $ship2)				
+
 		movb	(%r14), %dil
-		addb 	$2, %dil 		# x bullet position hard coded cannon (TODO bullet now teleports accordingly to enemy ship's movement)
+		addb 	3(%rax), %dil # 3(%rax) is the bullet cannon position relative to x
+		popq 	%rax
+		
+
 		movb 	%dil, 5(%r14)	# update x bullet position
 		movb 	$'V', %dl
 		movb    $0x0f, %cl
@@ -433,6 +460,8 @@ detect_collision_two_bullets:
 		movb 	bullet_position_y, %sil
 		cmpb 	%sil, 6(%rax)
 		jle  	two_bullets_collision_no
+
+		movb 	bullet_position_x, %sil
 
 		movb 	bullet_position_x, %sil
 		addb 	$2, %sil 					# hard coded cannon position
@@ -558,9 +587,9 @@ swap:
 
 all_ships_killed:
 	cmpq 	$0, number_of_ships
-	jne epilogue_ask
+	jne 	epilogue_ask
 
-	call  	enemy_creation 	# create another wave
+	call  	enemy_wave_2 	# create another wave
 
 	epilogue_ask:
 		ret

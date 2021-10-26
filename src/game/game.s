@@ -31,7 +31,7 @@ gameInit:
 
 	call 	clear_screen
 	call 	player_init
-	call 	enemy_creation
+	call 	enemy_wave_1
 
 
     # TODO fix this
@@ -77,6 +77,7 @@ not_first_run:
 	call 	clear_screen
 	call 	player_loop
     call 	enemy_loop
+    call 	display_information
 
 game_loop_end:
 	# epilogue
