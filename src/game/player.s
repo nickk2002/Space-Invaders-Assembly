@@ -1,31 +1,33 @@
 .file "src/game/player.s"
 
-.global player_init, print_player_position, player_loop, player_position_x, player_position_y, player_size, bullet_position_x, bullet_position_y, start_anim
-
+.global player_init, player_loop, player_position_x, player_position_y, player_size, bullet_position_x, bullet_position_y, start_anim
+.global nr_lives
 .global decrease_one_life
 
 .section .game.text
 	player_appearance: .asciz "/-^-\\"
-	player_hp_message: .asciz "HP: "
 	player_dead_message: .asciz "Player is dead right now"
 
 
 .section .game.data
-	player_size: .byte 1
 
+	player_points: .quad 0 # player max value is huge
+
+	player_size: .byte 1
 	bullet_initial_y_pos: .byte 23 
 
 	player_position_x: .byte 40
 	player_position_y: .byte 24
 	bullet_position_x: .byte 40
 	bullet_position_y: .byte 23
+
 	start_anim: .byte 0
 	game_frame_x: .byte 80
 	game_frame_y: .byte 25
 	a_pressed: .byte 0 
 	d_pressed: .byte 0
 
-	nr_lives: .byte 3
+	nr_lives: .byte 255
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
@@ -34,27 +36,6 @@
 	    .quad player_move_left
 	    .quad player_move_right
 
-
-
-
-print_nr_lives:
-
-	
-	movq	$1, %rdi 
-	movq	$23, %rsi 
-	movq	$player_hp_message, %rdx
-	movq	$0x0f,	%rcx 
-	call    print_pattern
-
-
-	movq	$5, %rdi 
-	movq	$23, %rsi 
-	movq	nr_lives, %rdx
-	addq 	$0x30, %rdx
-	movq	$0x0f,	%rcx 
-	call    putChar
-
-	ret 
 
 
 player_init:
@@ -77,8 +58,6 @@ player_init:
 
 
 player_loop:
-	# print nr_lives
-	call    print_nr_lives
 
 	cmpb	$1, player_dead 
 	jne     player_not_dead
@@ -97,6 +76,8 @@ player_not_dead:
 	call    player_move_right
 	call 	print_player_position
 	call 	player_input
+	# check if there is a collision
+	call  	detect_collision_player_bullet
 	call 	do_animation
 end_player_loop:
 
@@ -195,21 +176,7 @@ player_move_left:
 		popq 	%rbp
 		ret
 
-decrease_one_life:
-	cmpb    $0, nr_lives
-	je      end_descrease_lives
 
-	decb 	nr_lives
-	cmpb	$0, nr_lives
-	jne		end_descrease_lives
-
-	# player died he has 0 lives
-	movb    $1, player_dead
-	jmp     end_descrease_lives
-
-	end_descrease_lives:
-
-	ret 
 
 player_move_right:
 	# prologue
@@ -242,6 +209,22 @@ player_move_right:
 		popq 	%rbp
 		ret
 
+decrease_one_life:
+	cmpb    $0, nr_lives
+	je      end_descrease_lives
+
+	decb 	nr_lives
+	cmpb	$0, nr_lives
+	jne		end_descrease_lives
+
+	# player died he has 0 lives
+	movb    $1, player_dead
+	jmp     end_descrease_lives
+
+	end_descrease_lives:
+
+	ret 
+
 print_player_position:
 	# prologue
 	pushq   %rbp 
@@ -252,12 +235,6 @@ print_player_position:
 	movq 	$player_appearance, %rdx
 	movb	$0x0f, %cl
 	call 	print_pattern
-
-	// movb 	player_position_x, %dil
-	// movb	player_position_y, %sil
-	// movb	$0x0f, %cl
-	// movb	$'M', %dl
-	// call	putChar
 
 	# epilogue		
 	movq    %rbp, %rsp
@@ -295,8 +272,7 @@ do_animation:
 	cmpb    $0, start_anim
 	je      epilogue # if it is 0 jump to epilogue
 
-	# check if there is a collision
-	call  	detect_collision_player_bullet
+
 
 	# print character 'A' at coords (x,y)
 	movb 	bullet_position_x, 	%dil 
@@ -308,10 +284,13 @@ do_animation:
 
 	# decrease y because we are going up 
 	decb    bullet_position_y
-	cmpb	$-1, bullet_position_y
+	movb    display_y_coord, %cl
+	cmpb	%cl, bullet_position_y
 	jne     epilogue # if y is not -1 we still have an animation going
 
 	# reached end of the animation
+	movb 	player_position_x, %al 
+	movb 	%al, bullet_position_x
 	movb    bullet_initial_y_pos, %al
 	movb    %al, bullet_position_y  # intialize y to the bottom of the screen again
 	movb	$0, start_anim
@@ -365,7 +344,31 @@ detect_collision_player_bullet:
 		jl 		collision_no
 
 		collision_yes:
-			addb 	$0, (%rax)
+			addb 	$0x01, 9(%rax) # change the colour
+			decb 	8(%rax)	# decrement health
+			cmpb    $0, 8(%rax)
+			jne     health_not_zero
+			# health is 0 right now
+			pushq   %rax
+			pushq	%rcx
+
+			movb    4(%rax), %dil
+			call    get_ship_pointer_from_type
+
+			movq    $0, %rcx 
+			movb    4(%rax), %cl  # the number of point of the ship is in rdi 
+			addq    %rcx, player_points
+
+			popq	%rcx
+			popq	%rax 
+
+			health_not_zero:
+
+			movb    bullet_initial_y_pos, %al
+			movb    %al, bullet_position_y  # intialize y to the bottom of the screen again
+			movb	$0, start_anim
+
+			# collision detected with the ship
 			movq 	%r15, %rax
 			jmp 	finish_collision_loop
 

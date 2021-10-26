@@ -2,12 +2,14 @@
 
 ## Enemies
 
-- [ ] Implement HP points
-- [ ] Implement dying mechanism
+- [X] Implement HP points
+- [X] Implement die
 - [ ] Implement movement
-- [ ] Implement color change
-- [ ] Implement enemy bullets
-- [ ] Better ASCII art + different art for each type of ship
+- [X] Implement color change
+- [X] Implement enemy bullets
+- [X] Better ASCII art + different art for each type of ship ( We have two types of ships)
+- [ ] *Optional* Delete dead ship from the array
+- [X] Make 2 waves
 
 ## Boss
 - [ ] Add more HP
@@ -30,11 +32,12 @@
 - [ ] *Optional* Make the menu nicer (highlight, select with arrows, press enter to choose option)
 
 ## Scores
-- [ ] Assign score the each enemy. Make destorying the enemy reward scores
-- [ ] Track the highest score sofar
+- [X] Display section where we display information about the player
+- [X] Assign score the each enemy. Make destorying the enemy reward scores
+- [ ] Track the highest score so far
 - [ ] Scores increase with difficulty
 
 ## Player
-- [ ] Implement HP points
+- [X] Implement HP points
 - [ ] Make shooting more projectiles work
 - [ ] Getting to 0 HP should make the player lose and return to the menu
