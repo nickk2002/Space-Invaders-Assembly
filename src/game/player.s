@@ -352,11 +352,12 @@ detect_collision_player_bullet:
 			pushq   %rax
 			pushq	%rcx
 
-			movb    4(%rax), %dil
-			call    get_ship_pointer_from_type
+			// movb    4(%rax), %dil
+			// call    get_ship_pointer_from_type
 
-			movq    $0, %rcx 
-			movb    4(%rax), %cl  # the number of point of the ship is in rdi 
+			// movq    $0, %rcx 
+			// movb    4(%rax), %cl  # the number of point of the ship is in rdi
+			movb 	11(%rax), %cl
 			addq    %rcx, player_points
 
 			popq	%rcx
