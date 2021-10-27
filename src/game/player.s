@@ -27,7 +27,7 @@
 	a_pressed: .byte 0 
 	d_pressed: .byte 0
 
-	nr_lives: .byte 10
+	nr_lives: .byte 3
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
@@ -233,8 +233,29 @@ print_player_position:
 	movb 	player_position_x, %dil
 	movb	player_position_y, %sil
 	movq 	$player_appearance, %rdx
-	movb	$0x0f, %cl
-	call 	print_pattern
+
+	cmpb 	$3, nr_lives
+	jge  	print_player_white
+
+	cmpb 	$2, nr_lives
+	je  	print_player_yellow
+
+	cmpb 	$1, nr_lives
+	je  	print_player_red
+
+	print_player_white:
+		movb	$0x0f, %cl
+		jmp  	print_player
+
+	print_player_yellow:
+		movb	$0x06, %cl
+		jmp  	print_player
+
+	print_player_red:
+		movb	$0x04, %cl
+
+	print_player:
+		call 	print_pattern
 
 	# epilogue		
 	movq    %rbp, %rsp
