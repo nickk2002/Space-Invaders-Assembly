@@ -25,14 +25,6 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .section .game.data
 is_first_run: .byte 1
 init_done_str: .asciz "[INFO]: GameInit() done"
-some_str: .asciz "       _                         _           _                _ 
-      | |                       (_)         | |              | |
- _ __ | | __ _ _   _  ___ _ __   _ ___    __| | ___  __ _  __| |
-| '_ \\| |/ _` | | | |/ _ \\ '__| | / __|  / _` |/ _ \\/ _` |/ _` |
-| |_) | | (_| | |_| |  __/ |    | \\__ \\ | (_| |  __/ (_| | (_| |
-| .__/|_|\\__,_|\\__, |\\___|_|    |_|___/  \\__,_|\\___|\\__,_|\\__,_|
-| |             __/ |                                           
-|_|            |___/                                            "
 
 .section .game.text
 

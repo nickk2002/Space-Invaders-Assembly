@@ -30,7 +30,7 @@
 
 	nr_lives: .byte 127
 
-	initial_health: .byte 20
+	initial_health: .byte 1
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch

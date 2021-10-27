@@ -12,7 +12,14 @@
 Good luck!\nEach ship that you destroy gives you points.Press W to shoot and have fun!"
     close_menu_prompt: .asciz "Press Q to return to the main menu!"
     difficulty_prompt: .asciz "Please select the dificulty level\n1. Easy\n2. Medium\n3. Hard"
-	player_dead_message: .asciz "Player is dead right now\nPress Q to return to the main menu"
+    player_dead_message: .asciz "Press Q to return to the main menu\n       _                         _           _                _ 
+      | |                       (_)         | |              | |
+ _ __ | | __ _ _   _  ___ _ __   _ ___    __| | ___  __ _  __| |
+| '_ \\| |/ _` | | | |/ _ \\ '__| | / __|  / _` |/ _ \\/ _` |/ _` |
+| |_) | | (_| | |_| |  __/ |    | \\__ \\ | (_| |  __/ (_| | (_| |
+| .__/|_|\\__,_|\\__, |\\___|_|    |_|___/  \\__,_|\\___|\\__,_|\\__,_|
+| |             __/ |                                           
+|_|            |___/                                            "
 
 
 
