@@ -63,7 +63,7 @@ display_score:
 
 display_highscore:
 
-	movq	$40, %rdi
+	movq	$30, %rdi
 	movq	$0, %rsi 
 	movq	$highscore_message, %rdx
 	movq	$0x0f,	%rcx 
@@ -75,7 +75,7 @@ display_highscore:
     movq 	%rsp, %rsi
     call 	itoa_q
 
-	movq	$50, %rdi
+	movq	$41, %rdi
 	movq	$0, %rsi 
 	movq	%rax, %rdx
 	movq	$0x0f,	%rcx 
