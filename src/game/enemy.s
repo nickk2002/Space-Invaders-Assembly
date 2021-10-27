@@ -7,6 +7,9 @@
 	enemy_ship_type_2: .asciz "|___   ___|
     | |"
     enemy_ship_type_3: .asciz "[__U__]"
+    enemy_ship_type_4: .asciz "QWERTY1234567890QWERTY1234567890"
+    enemy_ship_type_5: .asciz "QWERTY1234567890QWERTY1234567890"
+    enemy_ship_type_6: .asciz "QWERTY1234567890QWERTY1234567890"
 
 
 	ship_type_1: .byte 0  
@@ -33,6 +36,29 @@
 	enemy_ship_type_3_movement:  .byte 1
 	enemy_ship_type_3_full_auto:  .byte 1
 
+	ship_type_4: .byte 0
+    enemy_ship_type_boss1_width: .byte 32
+   	enemy_ship_type_boss1_height:  .byte 1
+	enemy_ship_type_boss1_canon_x:  .byte 3
+	enemy_ship_type_boss1_points:  .byte 5
+	enemy_ship_type_boss1_movement:  .byte 0
+	enemy_ship_type_boss1_full_auto:  .byte 1
+
+	ship_type_5: .byte 0
+    enemy_ship_type_boss2_width: .byte 32
+   	enemy_ship_type_boss2_height:  .byte 1
+	enemy_ship_type_boss2_canon_x:  .byte 10
+	enemy_ship_type_boss2_points:  .byte 5
+	enemy_ship_type_boss2_movement:  .byte 0
+	enemy_ship_type_boss2_full_auto:  .byte 1
+
+	ship_type_6: .byte 0
+    enemy_ship_type_boss3_width: .byte 32
+   	enemy_ship_type_boss3_height:  .byte 1
+	enemy_ship_type_boss3_canon_x:  .byte 15
+	enemy_ship_type_boss3_points:  .byte 5
+	enemy_ship_type_boss3_movement:  .byte 0
+	enemy_ship_type_boss3_full_auto:  .byte 1
 
 .data
 	pos_y:  .quad 0
@@ -131,11 +157,20 @@ get_ship_pointer_from_type:
 	cmpb    $1, %dil   # check if the type of this is 1  
 	je      ship_is_type_1
 
-	cmpb    $2, %dil   # check if the type of this is 1  
+	cmpb    $2, %dil   # check if the type of this is 2 
 	je      ship_is_type_2
 
-	cmpb    $3, %dil   # check if the type of this is 1  
+	cmpb    $3, %dil   # check if the type of this is 3
 	je      ship_is_type_3
+
+	cmpb    $4, %dil   # check if the type of this is 4
+	je      ship_is_type_4
+
+	cmpb    $5, %dil   # check if the type of this is 5
+	je      ship_is_type_5
+
+	cmpb    $6, %dil   # check if the type of this is 6
+	je      ship_is_type_6
 
 	ship_is_type_1:
 	movq    $ship_type_1, %rax 
@@ -147,6 +182,18 @@ get_ship_pointer_from_type:
 
 	ship_is_type_3:
 	movq    $ship_type_3, %rax 
+	jmp 	end_ship_type_if_else
+
+	ship_is_type_4:
+	movq    $ship_type_4, %rax 
+	jmp 	end_ship_type_if_else
+
+	ship_is_type_5:
+	movq    $ship_type_5, %rax 
+	jmp 	end_ship_type_if_else
+
+	ship_is_type_6:
+	movq    $ship_type_6, %rax 
 	jmp 	end_ship_type_if_else
 
 	end_ship_type_if_else:
@@ -218,17 +265,29 @@ enemy_wave_3:
 	movq	enemy_array,%rax 
 	movq	%rax,current_pointer
 	
-	movb	$15, %dil  # x coord
-	movb    $1, %sil  # ship type 1
-	call    create_basic_ship
+	// movb	$15, %dil  # x coord
+	// movb    $1, %sil  # ship type 1
+	// call    create_basic_ship
 
-	movb	$40, %dil  # x coord
-	movb    $3, %sil  # ship type 3
-	call    create_basic_ship
+	// movb	$40, %dil  # x coord
+	// movb    $3, %sil  # ship type 3
+	// call    create_basic_ship
 
-	movb	$65, %dil  # x coord
-	movb    $2, %sil  # ship type 2
-	call    create_basic_ship
+	// movb	$65, %dil  # x coord
+	// movb    $2, %sil  # ship type 2
+	// call    create_basic_ship
+
+	movb 	$10, %dil
+	movb 	$4, %sil
+	call  	create_basic_ship
+
+	movb 	$10, %dil
+	movb 	$5, %sil
+	call  	create_basic_ship
+
+	movb 	$10, %dil
+	movb 	$6, %sil
+	call  	create_basic_ship
 
 	ret
 
@@ -270,6 +329,10 @@ enemy_wave_1:
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
+	ret
+
+enemy_wave_blank:
+	movq 	$0, number_of_ships
 	ret
 
 print_all_enemy_ships:
@@ -322,6 +385,12 @@ print_ships:
 		je     print_type_2
 		cmpb	$3, 4(%r15)  # check if the type is 3
 		je     print_type_3
+		cmpb	$4, 4(%r15)  # check if the type is 4
+		je     print_type_4
+		cmpb	$5, 4(%r15)  # check if the type is 5
+		je     print_type_5
+		cmpb	$6, 4(%r15)  # check if the type is 6
+		je     print_type_6
 
 		print_type_1:
 			movq    $enemy_ship_type_1,%rax    
@@ -333,6 +402,18 @@ print_ships:
 
 		print_type_3:
 			movq    $enemy_ship_type_3,%rax    
+			jmp   	end_print_type
+
+		print_type_4:
+			movq    $enemy_ship_type_4,%rax    
+			jmp   	end_print_type
+
+		print_type_5:
+			movq    $enemy_ship_type_5,%rax    
+			jmp   	end_print_type
+
+		print_type_6:
+			movq    $enemy_ship_type_6,%rax    
 			jmp   	end_print_type
 
 		end_print_type:
@@ -678,18 +759,29 @@ swap:
 	ret
 
 all_ships_killed:
+	cmpq 	$3, wave_counter
+	je  	boss_wave
+
 	cmpq 	$0, number_of_ships
 	jne 	epilogue_ask
+	jmp  	standard_wave
 
-	incq 	wave_counter
-	cmpq 	$3, wave_counter
-	jg  	epilogue_ask
+	boss_wave:
+		cmpq 	$2, number_of_ships
+		je 		wave_blank
+		jmp 	epilogue_ask
 
-	cmpq 	$2, wave_counter
-	je 		wave2
 
-	cmpq 	$3, wave_counter
-	je 		wave3
+	standard_wave:
+		incq 	wave_counter
+		cmpq 	$3, wave_counter
+		jg  	epilogue_ask
+
+		cmpq 	$2, wave_counter
+		je 		wave2
+
+		cmpq 	$3, wave_counter
+		je 		wave3
 
 	wave2:
 	call  	enemy_wave_2 	# create another wave
@@ -697,6 +789,10 @@ all_ships_killed:
 
 	wave3:
 	call  	enemy_wave_3 	# create another wave
+	jmp  	epilogue_ask
+
+	wave_blank:
+	call  	enemy_wave_blank 	# create another wave
 	jmp  	epilogue_ask
 
 	epilogue_ask:
