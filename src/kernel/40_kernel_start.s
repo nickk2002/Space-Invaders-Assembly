@@ -65,6 +65,7 @@ _kernel_entry_point:
 	call	init_memory			# almost everything else appreciates working memory management
 	call	init_PIC			# PIC before APIC
 	call	init_ps2
+    call    init_serial
 
 	# TODO set CR4.OSXMMEXCPT to 1; cr4, fsgsbase?
 # TODO cr4.tsd? cr4.pge? pce?

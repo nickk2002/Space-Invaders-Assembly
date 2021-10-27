@@ -27,7 +27,7 @@
 	a_pressed: .byte 0 
 	d_pressed: .byte 0
 
-	nr_lives: .byte 255
+	nr_lives: .byte 127
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch

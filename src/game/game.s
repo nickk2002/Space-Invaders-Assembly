@@ -24,6 +24,7 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 
 .section .game.data
 is_first_run: .byte 1
+init_done_str: .asciz "[INFO]: GameInit() done"
 
 .section .game.text
 
@@ -33,7 +34,9 @@ gameInit:
 	call 	player_init
 	call 	enemy_wave_1
 
-
+    movq $init_done_str, %rdi
+    call log_string
+    call log_newline
     # TODO fix this
     // call 	timer_init
 
@@ -47,7 +50,7 @@ gameLoop:
 	movq 	%rsp, %rbp
 
     call 	muteSpeaker
-	call    clear_screen
+    call    clear_screen
 
     call 	is_game_started
     cmpb 	$1, %al

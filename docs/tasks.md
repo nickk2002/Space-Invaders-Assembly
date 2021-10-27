@@ -8,8 +8,8 @@
 - [X] Implement color change
 - [X] Implement enemy bullets
 - [X] Better ASCII art + different art for each type of ship ( We have two types of ships)
-- [ ] Delete dead ship from the array
-- [ ] Make 2 waves
+- [ ] *Optional* Delete dead ship from the array
+- [X] Make 2 waves
 
 ## Boss
 - [ ] Add more HP
@@ -32,8 +32,8 @@
 - [ ] *Optional* Make the menu nicer (highlight, select with arrows, press enter to choose option)
 
 ## Scores
-- [ ] Display section where we display information about the player
-- [ ] Assign score the each enemy. Make destorying the enemy reward scores
+- [X] Display section where we display information about the player
+- [X] Assign score the each enemy. Make destorying the enemy reward scores
 - [ ] Track the highest score so far
 - [ ] Scores increase with difficulty
 
