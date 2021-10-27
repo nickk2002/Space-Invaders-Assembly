@@ -19,29 +19,41 @@ display_nr_lives:
 	call    print_pattern
 
 
+    subq $24, %rsp
+    movb nr_lives, %dil
+    movq %rsp, %rsi
+    call itoa_b
+
 	movq	$4, %rdi 
 	movq	$0, %rsi 
-	movq	nr_lives, %rdx
-	addq 	$0x30, %rdx
+	movq	%rax, %rdx
 	movq	$0x0f,	%rcx 
-	call    putChar
+	call    print_pattern
+
+    addq $24, %rsp
 
 	ret 
 
 display_score:
-	movq	$6, %rdi 
+	movq	$10, %rdi
 	movq	$0, %rsi 
 	movq	$score_message, %rdx
 	movq	$0x0f,	%rcx 
 	call    print_pattern
 
 
-	movq	$13, %rdi 
+    subq $24, %rsp
+    movq player_points, %rdi
+    movq %rsp, %rsi
+    call itoa_q
+
+	movq	$17, %rdi
 	movq	$0, %rsi 
-	movq	player_points, %rdx
-	addq 	$0x30, %rdx
+	movq	%rax, %rdx
 	movq	$0x0f,	%rcx 
-	call    putChar
+	call    print_pattern
+
+    addq $24, %rsp
 
 	ret 
 
@@ -73,4 +85,4 @@ display_delimiter:
 
 	popq	%r15
 	ret 
-	
+
