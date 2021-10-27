@@ -3,12 +3,46 @@
 	option2: .asciz "Press 2 to see the tutorial"
 	option3: .asciz "Press 3 to select the dificulty level"
 	option4: .asciz "Press 4 to quit the game"
-    tutorial: .asciz "You have to press left right to control the space ship and that's it!. Good luck!"
+    tutorial: .asciz " _____     _             _       _ 
+|_   _|   | |           (_)     | |
+  | |_   _| |_ ___  _ __ _  __ _| |
+  | | | | | __/ _ \\| '__| |/ _` | |
+  | | |_| | || (_) | |  | | (_| | |
+  \\_/\\__,_|\\__\\___/|_|  |_|\\__,_|_|\n\nYou have to press left right to control the space ship.
+Good luck!\nEach ship that you destroy gives you points.Press W to shoot and have fun!"
     close_menu_prompt: .asciz "Press Q to return to the main menu!"
     difficulty_prompt: .asciz "Please select the dificulty level\n1. Easy\n2. Medium\n3. Hard"
+    player_dead_message: .asciz "Press Q to return to the main menu\n _____                     _             _                        
+|  ___|                   (_)           | |                       
+| |__ _ __   ___ _ __ ___  _  ___  ___  | |__   __ ___   _____    
+|  __| '_ \\ / _ \\ '_ ` _ \\| |/ _ \\/ __| | '_ \\ / _` \\ \\ / / _ \\   
+| |__| | | |  __/ | | | | | |  __/\\__ \\ | | | | (_| |\\ V /  __/   
+\\____/_| |_|\\___|_| |_| |_|_|\\___||___/ |_| |_|\\__,_| \\_/ \\___|   
+                                                                  
+                                                                  
+ _                _                                   _           
+| |              | |                                 | |          
+| |__   ___  __ _| |_ ___ _ __    _   _  ___  _   _  | |__  _   _ 
+| '_ \\ / _ \\/ _` | __/ _ \\ '_ \\  | | | |/ _ \\| | | | | '_ \\| | | |
+| |_) |  __/ (_| | ||  __/ | | | | |_| | (_) | |_| | | |_) | |_| |
+|_.__/ \\___|\\__,_|\\__\\___|_| |_|  \\__, |\\___/ \\__,_| |_.__/ \\__, |
+                                   __/ |                     __/ |
+                                  |___/                     |___/ 
+          __           _                      __   _____          
+         / _|         | |                    / _| / __  \\         
+  __ _  | |_ __ _  ___| |_ ___  _ __    ___ | |_  `' / /'         
+ / _` | |  _/ _` |/ __| __/ _ \\| '__|  / _ \\|  _|   / /           
+| (_| | | || (_| | (__| || (_) | |    | (_) | |   ./ /___         
+ \\__,_| |_| \\__,_|\\___|\\__\\___/|_|     \\___/|_|   \\_____/         
+                                                                  
+                                                                                                                                                                                          
+"
+
+
+
 .data
 	current_option: .quad 5
-	middle_x: .byte 30
+	middle_x: .byte 25
 	exiting_main_menu: .byte 0
     difficulty_level: .byte 1
 	jumptable1:
@@ -18,7 +52,7 @@
 		.quad handle_option4
 
 .global main_menu_handle
-.global is_game_started
+.global is_game_started,player_dead_screen
 
 is_game_started:
     cmpq $0, current_option
@@ -28,6 +62,33 @@ is_game_started:
 game_is_not_started:
     movq $0, %rax
 is_game_started_return:
+    ret
+
+
+player_dead_screen:
+
+    movq    $10, %rdi 
+    movq    $0, %rsi 
+    movq    $player_dead_message, %rdx 
+    movb    $0x0f, %cl 
+    call    print_pattern
+
+
+    call 	readKeyCode
+    movb 	%al, %dil # Save the pressed key in DIL
+    cmpb 	$0x10, %al # If Q is pressed
+
+    jne     1f
+    movq	$42, %rdi 
+    call    log_numq
+	movq 	$5, current_option
+
+	movb 	$0, exiting_main_menu
+	call    gameInit
+
+
+    1:
+
     ret
 
 
@@ -91,8 +152,12 @@ handle_option3:
     jmp difficulty_return
 
 change_difficulty:
-    movq %rsi, difficulty_level
-    movq $0, exiting_main_menu
+    movb 	%sil, difficulty_level
+
+	movb	difficulty_level, %dil 
+	call    log_numb
+
+    movb    $0, exiting_main_menu
 
 difficulty_return:
     movq %rbp, %rsp
@@ -106,9 +171,12 @@ main_menu_handle:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
+	call 	display_difficulty
+
     call readKeyCode
     movb %al, %dil # Save the pressed key in DIL
     cmpb $0x10, %al # If Q is pressed
+
     je no_submenu_called # Then print the main menu again
 
 	cmpb $0, exiting_main_menu
@@ -131,10 +199,12 @@ main_menu_handle:
 	cmpb $0x05, %al # compare if 4 is pressed 
 	je change_menu
 
+    
 no_submenu_called:
     movb $0, exiting_main_menu
 	call print_menu_options
 	jmp  end_switch
+
 
 change_menu:
     movb $1, exiting_main_menu
@@ -142,6 +212,7 @@ change_menu:
 print_sub_option:
     movq current_option, %rsi
     movq $0, %rax
+
     call *jumptable1(%rax, %rsi, 8)
 
 end_switch:
@@ -158,7 +229,7 @@ print_menu_options:
 	movq middle_x, %rdi 
 	movq $10, %rsi 
 	movq $option1, %rdx
-	movq $0x01, %rcx
+	movq $0x04, %rcx
 	call print_pattern
 
 	cmpq $1, %rax 
@@ -167,7 +238,7 @@ print_menu_options:
 	movq middle_x, %rdi 
 	movq $12, %rsi 
 	movq $option2, %rdx
-	movq $0x01, %rcx
+	movq $0x04, %rcx
 	call print_pattern
 
 	cmpq $1, %rax 
@@ -176,7 +247,7 @@ print_menu_options:
 	movq middle_x, %rdi 
 	movq $14, %rsi 
 	movq $option3, %rdx
-	movq $0x01, %rcx
+	movq $0x04, %rcx
 	call print_pattern
 
 	cmpq $1, %rax 
@@ -185,7 +256,7 @@ print_menu_options:
 	movq middle_x, %rdi 
 	movq $16, %rsi 
 	movq $option4, %rdx
-	movq $0x01, %rcx
+	movq $0x04, %rcx
 	call print_pattern
 
 	cmpq $1, %rax 

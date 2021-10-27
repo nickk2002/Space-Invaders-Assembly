@@ -74,13 +74,22 @@ reset_keypress_info:
     incq 	%rdi
     jmp 	reset_keypress_info
 
-not_first_run:
 
-    call 	muteSpeaker
+not_first_run:
+    cmpb    $0, player_dead 
+    je     1f  
+    call    player_dead_screen
+    jmp     2f
+
+    1:
+    # player is not dead
 	call 	clear_screen
-	call 	player_loop
+    call 	player_loop
     call 	enemy_loop
     call 	display_information
+
+    2:
+
 
 game_loop_end:
 	# epilogue
