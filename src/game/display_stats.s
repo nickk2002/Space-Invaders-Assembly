@@ -84,5 +84,4 @@ display_delimiter:
 	end_printing:
 
 	popq	%r15
-	ret 
-
+	ret

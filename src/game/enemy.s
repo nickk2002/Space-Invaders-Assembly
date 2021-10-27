@@ -104,8 +104,6 @@ create_ship:
 
 	movq    16(%r15), %rax # the next free position
 
-
-
 	movq	attribute_count, %rsi
 	addq	%rsi, current_pointer 	 # next free position 
 	# current_pointer = current_pointer + attribute_count
@@ -180,8 +178,11 @@ create_basic_ship:
 	movb    1(%rax), %dl # width
 	movb    2(%rax), %cl # height
 	movb    3(%rax), %r9b # canon position
+	xorq 	%r15, %r15
 	movb 	4(%rax), %r15b # points for the ship; since it is a stack-passed parameter, it is pushed later in this subroutine
+	xorq 	%r14, %r14
 	movb 	5(%rax), %r14b # movement parameter of the ship
+	xorq 	%r13, %r13
 	movb 	6(%rax), %r13b # full auto boolean
 	popq 	%rax
 	movb    %al,  %r8b # type of the ship

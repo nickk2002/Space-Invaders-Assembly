@@ -27,7 +27,7 @@
 	a_pressed: .byte 0 
 	d_pressed: .byte 0
 
-	nr_lives: .byte 255
+	nr_lives: .byte 10
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
@@ -352,6 +352,7 @@ detect_collision_player_bullet:
 			pushq   %rax
 			pushq	%rcx
 
+			movq 	$0, %rcx
 			movb 	11(%rax), %cl
 			addq    %rcx, player_points
 
