@@ -19,10 +19,10 @@ display_nr_lives:
 	call    print_pattern
 
 
-    subq $24, %rsp
-    movb nr_lives, %dil
-    movq %rsp, %rsi
-    call itoa_b
+    subq 	$24, %rsp
+    movb 	nr_lives, %dil
+    movq 	%rsp, %rsi
+    call 	itoa_b
 
 	movq	$4, %rdi 
 	movq	$0, %rsi 
