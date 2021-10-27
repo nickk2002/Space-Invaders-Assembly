@@ -3,14 +3,15 @@
 .global player_init, player_loop, player_position_x, player_position_y, player_size, bullet_position_x, bullet_position_y, start_anim
 .global nr_lives
 .global decrease_one_life
+.global player_dead 
 
 .section .game.text
 	player_appearance: .asciz "/-^-\\"
-	player_dead_message: .asciz "Player is dead right now"
 
 
 .section .game.data
-
+	
+	player_best_points: .quad 0
 	player_points: .quad 0 # player max value is huge
 
 	player_size: .byte 1
@@ -29,6 +30,7 @@
 
 	nr_lives: .byte 127
 
+	initial_health: .byte 20
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
@@ -50,6 +52,11 @@ player_init:
 	call 	character_count
 	movb 	%al, player_size
 
+	movb    $0, player_dead
+	movb    initial_health, %ah
+	movb 	%ah, nr_lives
+
+	movb    $0, player_points
 
 	# epilogue		
 	movq    %rbp, %rsp
@@ -62,12 +69,6 @@ player_loop:
 
 	cmpb	$1, player_dead 
 	jne     player_not_dead
-
-	movq	$10, %rdi 
-	movq	$20, %rsi 
-	movq	$player_dead_message, %rdx 
-	movb    $0x0f, %cl 
-	call   	print_pattern
 
 	jmp 	end_player_loop
 
@@ -377,6 +378,14 @@ detect_collision_player_bullet:
 			movq 	$0, %rcx
 			movb 	11(%rax), %cl
 			addq    %rcx, player_points
+
+			movq	player_points, %rax 
+			cmpq	%rax, player_best_points # compare player_best_points < player_points
+			jge     1f # do nothing if the best_points >= player_points
+			movq	%rax, player_best_points
+
+			1:
+
 
 			popq	%rcx
 			popq	%rax 
