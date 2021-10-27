@@ -89,7 +89,7 @@ timer_init:
 	# $gameLoop -> address of the gameLoop label
 
 	movq	game_loop_fps, %rdi 
-	movq	$gameLoop, %rsi  
+	movq	$sound_loop, %rsi  
 	call    add_timer
 
 
