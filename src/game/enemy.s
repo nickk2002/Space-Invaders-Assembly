@@ -6,6 +6,7 @@
 	enemy_ship_type_1: .asciz "\\__Y__/"
 	enemy_ship_type_2: .asciz "|___   ___|
     | |"
+    enemy_ship_type_3: .asciz "[__U__]"
 
 
 	ship_type_1: .byte 0  
@@ -13,12 +14,25 @@
 	enemy_ship_type_1_height:   .byte 1
 	enemy_ship_type_1_canon_x: .byte 3
 	enemy_ship_type_1_points:  .byte 1
+	enemy_ship_type_1_movement:  .byte 1
+	enemy_ship_type_1_full_auto:  .byte 0
 
 	ship_type_2: .byte 0
     enemy_ship_type_2_width: .byte 11
-   	enemy_ship_type_2_height:  .byte 1
+   	enemy_ship_type_2_height:  .byte 2
 	enemy_ship_type_2_canon_x:  .byte 5
 	enemy_ship_type_2_points:  .byte 3
+	enemy_ship_type_2_movement:  .byte 0
+	enemy_ship_type_2_full_auto:  .byte 1
+
+	ship_type_3: .byte 0
+    enemy_ship_type_3_width: .byte 7
+   	enemy_ship_type_3_height:  .byte 1
+	enemy_ship_type_3_canon_x:  .byte 3
+	enemy_ship_type_3_points:  .byte 5
+	enemy_ship_type_3_movement:  .byte 1
+	enemy_ship_type_3_full_auto:  .byte 1
+
 
 .data
 	pos_y:  .quad 0
@@ -27,6 +41,7 @@
 	current_pointer: .quad 0
 	number_of_ships: .quad 0
 	attribute_count: .quad 16
+	wave_counter: .quad 1
 
 .global number_of_ships, get_ship_at_position, enemy_loop
 
@@ -51,8 +66,10 @@ enemy_loop:
 # r12: the health of the ship
 # stack-parameter1: the health of the ship
 # stack-parameter2: colour of the ship
-# stack-parameter3: movement boolean of the ship; 0 - moves, 1 - does not move
+# stack-parameter3: movement of the ship; 0 - moves, 1/2 - oscillates horizontally (1 - first move is to the left, 2 - first move is to the right)
 # stack-parameter4: points for killing this ship
+# stack-parameter5: boolean for full auto; 1 - full auto; 0 - no full auto
+# 15th byte is the x coordinate where the bullet was shot from
 # we use the current_pointer as the memeory position
 # return the next free position
 create_ship:
@@ -74,18 +91,18 @@ create_ship:
 	movb 	%r11b, 7(%r15) # shooting boolean
 
 
-	movb 	16(%rbp), %sil
+	movb 	48(%rbp), %sil
 	movb 	%sil, 8(%r15) # health
-	movb 	24(%rbp), %sil
+	movb 	40(%rbp), %sil
 	movb 	%sil, 9(%r15) # colour
 	movb 	32(%rbp), %sil
-	movb 	%sil, 10(%r15) # movement boolean
-	movb 	40(%rbp), %sil
+	movb 	%sil, 10(%r15) # movement
+	movb 	24(%rbp), %sil
 	movb 	%sil, 11(%r15) # points
+	movb 	16(%rbp), %sil
+	movb 	%sil, 12(%r15) # full auto
 
 	movq    16(%r15), %rax # the next free position
-
-
 
 	movq	attribute_count, %rsi
 	addq	%rsi, current_pointer 	 # next free position 
@@ -110,8 +127,15 @@ create_ship:
 get_ship_pointer_from_type:
 
 	movq	$0, %rax # pointer to the ship type
+
 	cmpb    $1, %dil   # check if the type of this is 1  
-	jne     ship_is_type_2
+	je      ship_is_type_1
+
+	cmpb    $2, %dil   # check if the type of this is 1  
+	je      ship_is_type_2
+
+	cmpb    $3, %dil   # check if the type of this is 1  
+	je      ship_is_type_3
 
 	ship_is_type_1:
 	movq    $ship_type_1, %rax 
@@ -120,18 +144,27 @@ get_ship_pointer_from_type:
 	ship_is_type_2:
 	movq    $ship_type_2, %rax 
 	jmp 	end_ship_type_if_else
+
+	ship_is_type_3:
+	movq    $ship_type_3, %rax 
+	jmp 	end_ship_type_if_else
+
 	end_ship_type_if_else:
 
 	ret
 
 # returns the initial address into rax
 # rdi -> x position of the basic ship
-# rsi -> type of ship 
+# rsi -> type of ship
 # based on the type of the ship width, height will be set
 # also the life of the ship
 create_basic_ship:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
+
+	pushq 	%r13
+	pushq 	%r14
+	pushq 	%r15
 
 	pushq 	%rdi 
 	movb    %sil, %dil 
@@ -145,6 +178,12 @@ create_basic_ship:
 	movb    1(%rax), %dl # width
 	movb    2(%rax), %cl # height
 	movb    3(%rax), %r9b # canon position
+	xorq 	%r15, %r15
+	movb 	4(%rax), %r15b # points for the ship; since it is a stack-passed parameter, it is pushed later in this subroutine
+	xorq 	%r14, %r14
+	movb 	5(%rax), %r14b # movement parameter of the ship
+	xorq 	%r13, %r13
+	movb 	6(%rax), %r13b # full auto boolean
 	popq 	%rax
 	movb    %al,  %r8b # type of the ship
 	addb	%dil, %r9b # x coord bullet
@@ -154,17 +193,42 @@ create_basic_ship:
 	movb    %sil, %r10b  
 	addb    %cl, %r10b  
 
-	movb 	$1, %r11b # shooting by default
+	movb 	%r13b, %r11b # default shooting value based on full auto boolean 
 
-	pushq 	$1 # points for killing the ship
-	pushq 	$0 # no movement by default
-	pushq 	$2 # colour
 	pushq 	$3 # 3 hp
+	pushq 	$2 # colour
+	pushq 	%r14 # movement
+	pushq 	%r15 # points for killing the ship
+	pushq 	%r13 # full auto boolean
 	call    create_ship
 
 	# epilogue
+	popq 	%r13
+	popq 	%r14
+	popq 	%r15
+
 	movq    %rbp, %rsp
 	popq    %rbp 
+
+	ret
+
+enemy_wave_3:
+	movq	$0, number_of_ships
+	# current_pointer <- enemy_array
+	movq	enemy_array,%rax 
+	movq	%rax,current_pointer
+	
+	movb	$15, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb	$40, %dil  # x coord
+	movb    $3, %sil  # ship type 3
+	call    create_basic_ship
+
+	movb	$65, %dil  # x coord
+	movb    $2, %sil  # ship type 2
+	call    create_basic_ship
 
 	ret
 
@@ -202,7 +266,7 @@ enemy_wave_1:
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
-	movb	$20, %dil  # x coord
+	movb	$50, %dil  # x coord
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
@@ -253,13 +317,22 @@ print_ships:
 
 		movq	$0, %rax 
 		cmpb	$1, 4(%r15)  # check if the type is 1
-		jne     print_type_2
+		je     print_type_1
+		cmpb	$2, 4(%r15)  # check if the type is 2
+		je     print_type_2
+		cmpb	$3, 4(%r15)  # check if the type is 3
+		je     print_type_3
+
 		print_type_1:
 			movq    $enemy_ship_type_1,%rax    
 			jmp   	end_print_type
 
 		print_type_2:
 			movq    $enemy_ship_type_2,%rax    
+			jmp   	end_print_type
+
+		print_type_3:
+			movq    $enemy_ship_type_3,%rax    
 			jmp   	end_print_type
 
 		end_print_type:
@@ -337,20 +410,27 @@ enemy_bullet_animation:
 		cmpb 	$0, 8(%r14)		# check if enemy ship is alive (health > 0)
 		jle     enemy_bullet_continue # if it is 0 jump to continue
 
-		# print character 'V' at coords (x,y)
-		movb	6(%r14), %sil 	# y bullet position
+		# calculate the intial bullet y
+		# y coord ship + height
+		movb    1(%r14), %al 
+		addb    3(%r14), %al
+		cmpb 	6(%r14), %al
+		jne 	no_need_to_set_bullet_pos
 
-
-		pushq	%rax
+		# save the x coord where the bullet was shot from in 15(%r14)
 		movb    4(%r14), %dil # type of the ship
 		call 	get_ship_pointer_from_type 
-		# we have the ship pointer into rax ($ship1, $ship2)				
-
+		# we have the ship pointer into rax ($ship1, $ship2)
 		movb	(%r14), %dil
 		addb 	3(%rax), %dil # 3(%rax) is the bullet cannon position relative to x
-		popq 	%rax
-		
+		movb 	%dil, 15(%r14)
 
+		no_need_to_set_bullet_pos:
+		# print character 'V' at coords (x,y)
+		movb	6(%r14), %sil 	# y bullet position			
+
+		movb	15(%r14), %dil
+		
 		movb 	%dil, 5(%r14)	# update x bullet position
 		movb 	$'V', %dl
 		movb    $0x0f, %cl
@@ -364,10 +444,11 @@ enemy_bullet_animation:
 		# calculate the intial bullet y
 		# y coord ship + height
 		movb    1(%r14), %al 
-		incb    %al 
+		addb    3(%r14), %al 
 		# reached end of the animation
 		movb 	%al, 6(%r14)		# start y pos of bullet
-		movb 	$1, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
+		movb 	12(%r14), %dil 		# get full auto boolean of the ship
+		movb 	%dil, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
 
 		enemy_bullet_continue:
 			decq 	%r15
@@ -456,6 +537,10 @@ detect_collision_two_bullets:
 		call 	get_ship_at_position
 		movq 	%rax, %r14
 
+		# check if the enemy ship even shoots
+		cmpb 	$0, 12(%rax)
+		je 		dctb_loop_finish
+
 		# check collision
 		movb 	bullet_position_y, %sil
 		cmpb 	%sil, 6(%rax)
@@ -531,11 +616,13 @@ delete_dead_ship:
 
 		ret
 
+# handles calls some subroutines for every ship
 hanlde_ships:
 	# prologue
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
+	pushq 	%r14
 	pushq  	%r15
 
 	movq 	number_of_ships, %r15
@@ -548,15 +635,20 @@ hanlde_ships:
 		# get the ship
 		movq	%r15, %rdi
 		call 	get_ship_at_position
+		movq 	%rax, %r14
 
-		movq 	%rax, %rdi
+		movq 	%r14, %rdi
 		call 	delete_dead_ship
+
+		movq 	%r14, %rdi
+		call  	ship_move
 
 		decq 	%r15
 		jmp 	handle_ships_loop
 
 	epilogue_handle_ships:
 		popq 	%r15
+		popq 	%r14
 
 		# epilogue
 		movq    %rbp, %rsp
@@ -589,7 +681,68 @@ all_ships_killed:
 	cmpq 	$0, number_of_ships
 	jne 	epilogue_ask
 
+	incq 	wave_counter
+	cmpq 	$3, wave_counter
+	jg  	epilogue_ask
+
+	cmpq 	$2, wave_counter
+	je 		wave2
+
+	cmpq 	$3, wave_counter
+	je 		wave3
+
+	wave2:
 	call  	enemy_wave_2 	# create another wave
+	jmp  	epilogue_ask
+
+	wave3:
+	call  	enemy_wave_3 	# create another wave
+	jmp  	epilogue_ask
 
 	epilogue_ask:
+		ret
+
+# %rdi parameter - pointer to the ship
+ship_move:
+	cmpb 	$0, 10(%rdi)
+	je  	epilgue_sh
+
+	cmpb 	$21, 10(%rdi)
+	je  	enemy_ship_move_left
+
+	cmpb 	$41, 10(%rdi)
+	je  	enemy_ship_move_up
+
+	cmpb 	$61, 10(%rdi)
+	je  	enemy_ship_move_right
+
+	cmpb 	$81, 10(%rdi)
+	je  	enemy_ship_move_down
+
+	incb 	10(%rdi)
+	jmp 	epilgue_sh
+
+	enemy_ship_move_down:
+		decb 	1(%rdi)
+		incb 	10(%rdi)
+		movb 	$1, 10(%rdi)
+		jmp 	epilgue_sh
+
+	enemy_ship_move_right:
+		incb 	(%rdi)
+		// addb 	$10, (%rdi)
+		incb 	10(%rdi)
+		jmp 	epilgue_sh
+
+	enemy_ship_move_up:
+		incb 	1(%rdi)
+		incb 	10(%rdi)
+		jmp 	epilgue_sh	
+
+	enemy_ship_move_left:
+		decb 	(%rdi)
+		// subb 	$10, (%rdi)
+		incb 	10(%rdi)
+
+	epilgue_sh:
 		ret
