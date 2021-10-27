@@ -9,6 +9,11 @@
 .global log_numw
 .global log_numb
 
+.global itoa_q
+.global itoa_l
+.global itoa_w
+.global itoa_b
+
 log_numq:
     # INPUT: RDI=the number
     push %rbp
