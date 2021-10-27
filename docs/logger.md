@@ -7,3 +7,7 @@
 - `void log_numw(int16 val)` - Print 16 bit number *val* to the serial port
 - `void log_numl(int32 val)` - Print 32 bit number *val* to the serial port
 - `void log_numq(int64 val)` - Print 64 bit number *val* to the serial port
+- `char* itoa_b(int8 val, char* buffer)` - Convert 8 bit number *val* to a zero terminated string (returns the `char*` where the string starts)
+- `char* itoa_w(int16 val, char* buffer)` - Convert 16 bit number *val* to a zero terminated string (returns the `char*` where the string starts)
+- `char* itoa_l(int32 val, char* buffer)` - Convert 32 bit number *val* to a zero terminated string (returns the `char*` where the string starts)
+- `char* itoa_q(int64 val, char* buffer)` - Convert 64 bit number *val* to a zero terminated string (returns the `char*` where the string starts)
