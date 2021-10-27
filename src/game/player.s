@@ -27,7 +27,7 @@
 	a_pressed: .byte 0 
 	d_pressed: .byte 0
 
-	nr_lives: .byte 127
+	nr_lives: .byte 255
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
@@ -352,11 +352,7 @@ detect_collision_player_bullet:
 			pushq   %rax
 			pushq	%rcx
 
-			movb    4(%rax), %dil
-			call    get_ship_pointer_from_type
-
-			movq    $0, %rcx 
-			movb    4(%rax), %cl  # the number of point of the ship is in rdi 
+			movb 	11(%rax), %cl
 			addq    %rcx, player_points
 
 			popq	%rcx
