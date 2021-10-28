@@ -67,7 +67,6 @@ game_loop_running:
     # Do things here when game is launched from the main menu for the first time
     movq 	$0, %rdi
 reset_keypress_info:
-	// # TODO: seems to work even though it is deleted
     cmp 	$128, %rdi
     je 		not_first_run
     call 	isKeyUp
