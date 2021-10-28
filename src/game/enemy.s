@@ -584,14 +584,13 @@ print_ships:
 
 	ret
 
-# parameter %rdi - index of the ship which shoots
+# parameter %rdi - pointer to the ship which shoots
 enemy_shoot:
 	# prologue
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
-	call 	get_ship_at_position 	# index already in %rdi
-	movb 	$1, 7(%rax) 			# set boolean shooting to 1
+	movb 	$1, 7(%rdi) 			# set boolean shooting to 1
 
 	# epilogue
 	movq    %rbp, %rsp
@@ -661,8 +660,9 @@ enemy_bullet_animation:
 		addb    3(%r14), %al 
 		# reached end of the animation
 		movb 	%al, 6(%r14)		# start y pos of bullet
-		movb 	12(%r14), %dil 		# get full auto boolean of the ship
-		movb 	%dil, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
+		// movb 	12(%r14), %dil 		# get full auto boolean of the ship
+		// movb 	%dil, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
+		movb 	$0, 7(%r14)
 
 		enemy_bullet_continue:
 			decq 	%r15
@@ -857,6 +857,9 @@ hanlde_ships:
 		movq 	%r14, %rdi
 		call  	ship_move
 
+		movq 	%r14, %rdi
+		call 	random_shot
+
 		decq 	%r15
 		jmp 	handle_ships_loop
 
@@ -917,14 +920,17 @@ all_ships_killed:
 		je 		wave3
 
 	wave2:
+	movq 	$0, number_of_ships
 	call  	enemy_wave_2 	# create another wave
 	jmp  	epilogue_ask
 
 	wave3:
+	movq 	$0, number_of_ships
 	call  	enemy_wave_3 	# create another wave
 	jmp  	epilogue_ask
 
 	wave_blank:
+	movq 	$0, number_of_ships
 	call  	enemy_wave_blank 	# create another wave
 	jmp  	epilogue_ask
 
@@ -965,7 +971,6 @@ ship_move:
 
 	enemy_ship_move_right:
 		incb 	(%rdi)
-		// addb 	$10, (%rdi)
 		incb 	10(%rdi)
 		jmp 	epilgue_sh
 
@@ -976,8 +981,28 @@ ship_move:
 
 	enemy_ship_move_left:
 		decb 	(%rdi)
-		// subb 	$10, (%rdi)
 		incb 	10(%rdi)
 
 	epilgue_sh:
+		ret
+
+# %rdi parameter - the pointer to the ship
+random_shot:
+	pushq	%r15
+
+	cmpb 	$1, 12(%rdi) 	# check full auto boolean
+	jne 	epilogue_rs
+
+	movq  	%rdi, %r15
+	movq 	$15, %rdi 		# 1 in 15 change of shooting every fram iff the ship has full auto set to 1
+	call 	getRandom
+	cmpq 	$1, %rax
+	jne  	epilogue_rs
+
+	movq 	%r15, %rdi
+	call 	enemy_shoot
+
+	epilogue_rs:
+		popq 	%r15
+
 		ret
