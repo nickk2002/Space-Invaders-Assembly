@@ -96,6 +96,10 @@ timer_init:
 	movq	$gameLoop, %rsi  
 	call    add_timer
 
+	movq	$1, %rdi 
+	movq	$toggle_every_second, %rsi  
+	call    add_timer
+
 	ret 
 
 

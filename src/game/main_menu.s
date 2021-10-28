@@ -6,9 +6,7 @@
 
     close_menu_prompt: .asciz "Press Q to return to the main menu!"
     difficulty_prompt: .asciz "Please select the dificulty level\n1. Easy\n2. Medium\n3. Hard"
-    player_static_won: .asciz "Press Q to return to the main menu!\n Congrats you won!"
-
-
+    player_static_won_q: .asciz "Press Q to return to the main menu!"
 
 .data
 	won_animation: .byte 0
@@ -17,6 +15,7 @@
 	middle_x: .byte 25
 	exiting_main_menu: .byte 0
     difficulty_level: .byte 1
+    player_static_won_blink: .byte 0
 	jumptable1:
 		.quad handle_option1
 		.quad handle_option2
@@ -54,8 +53,19 @@ player_won_screen:
 
     movq    $5, %rdi 
     movq    $0, %rsi 
+    movq    $player_static_won_q, %rdx 
+    movb    $0x0f, %cl
+    call    print_pattern
+
+    movq    $5, %rdi 
+    movq    $2, %rsi 
     movq    $player_static_won, %rdx 
     movb    $0x0f, %cl 
+    cmpb    $0, second_toggle_state
+    jne     3f
+    movb    $0x00, %cl
+
+    3:
     call    print_pattern
 
     call 	readKeyCode

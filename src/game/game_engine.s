@@ -15,6 +15,12 @@ animation_cur_x: .quad 0
 animation_counter: .quad 0
 animation_txt_length: .quad 0
 
+second_toggle_state: .byte 0
+
+toggle_every_second:
+    xorb $1, second_toggle_state
+    ret
+
 start_pattern_animation:
     # RDI=pointer to string to animate
     movq    %rdi, current_txt_ptr
