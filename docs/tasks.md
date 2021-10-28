@@ -4,7 +4,7 @@
 
 - [X] Implement HP points
 - [X] Implement die
-- [ ] Implement movement
+- [X] Implement movement
 - [X] Implement color change
 - [X] Implement enemy bullets
 - [X] Better ASCII art + different art for each type of ship ( We have two types of ships)
@@ -12,19 +12,21 @@
 - [X] Make 2 waves
 
 ## Boss
-- [ ] Add more HP
-- [ ] Add multiple projectiles
+- [ ] Show boss HP
+- [ ] Move the boss random so that is does not get out of the window
+- [x] Add more HP
+- [x] Add multiple projectiles
 - [ ] Music for boss fight
-- [ ] Defeating the boss should make the player win the game
-- [ ] ASCII art *big fat bus*
+- [x] Defeating the boss should make the player win the game
+- [x] ASCII art *big fat bus*
 
 ## Sound
 - [ ] Modify timer code, to allow higher sample rate for music
-- [ ] Simple method to play list of frequencies
+- [X] Simple method to play list of frequencies
 
 ## Menu
 - [x] Make the menu appear on start
-- [ ] Make the menu appear after the player wins
+- [X] Make the menu appear after the player wins
 - [x] Option 1 *New game* should start a new game
 - [x] Option 2 *Tutorial* should show a static screen explaining controls, and game info
 - [x] Option 3 *Difficulty* should set the difficulty
@@ -34,10 +36,10 @@
 ## Scores
 - [X] Display section where we display information about the player
 - [X] Assign score the each enemy. Make destorying the enemy reward scores
-- [ ] Track the highest score so far
+- [X] Track the highest score so far
 - [ ] Scores increase with difficulty
 
 ## Player
 - [X] Implement HP points
 - [ ] Make shooting more projectiles work
-- [ ] Getting to 0 HP should make the player lose and return to the menu
+- [X] Getting to 0 HP should make the player lose and return to the menu

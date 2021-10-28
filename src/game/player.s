@@ -22,6 +22,7 @@
 	bullet_position_x: .byte 40
 	bullet_position_y: .byte 23
 
+	.data
 	start_anim: .byte 0
 	game_frame_x: .byte 80
 	game_frame_y: .byte 25
@@ -35,6 +36,8 @@
 	initial_health_hard: .byte 3
 	player_dead: .byte 0
 	player_won: .byte 0
+
+	player_full_auto: .byte 0x00
 
 # jumptable containing the addresses of the subroutines selected by the switch
 	jumptable:
@@ -82,12 +85,14 @@ player_not_dead:
 	call    player_move_right
 	call 	print_player_position
 	call 	player_input
+	call 	full_auto_handle
 	# check if there is a collision
 	call  	detect_collision_player_bullet
 	call 	do_animation
 end_player_loop:
 
-	ret 
+	ret
+
 player_input:
 	# prologue
 	pushq   %rbp 
@@ -138,8 +143,14 @@ player_input:
 	movb	$0,d_pressed	# d was released so d is not pressed anymore
 
 	did_not_release_d:
+	movq 	$0x12, %rdi
+    call 	isKeyUp
+	cmpb 	$1, %al 		# E was was released
 
+	jne     did_not_release_e
+	xorb 	$0xFF, player_full_auto
 
+	did_not_release_e:
 
 	epilogue_player_input:
 		# update the bullet position
@@ -282,7 +293,6 @@ player_shoot:
     /*movq 	$500, %rdi*/
     /*call 	playFrequency*/
 	
-
 	# epilogue		
 	movq    %rbp, %rsp
 	popq 	%rbp
@@ -423,3 +433,11 @@ detect_collision_player_bullet:
 
 		ret
 
+full_auto_handle:
+	cmpb 	$0xFF, player_full_auto
+	jne 	epilogue_fah
+
+	call 	player_shoot
+
+	epilogue_fah:
+		ret
