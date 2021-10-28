@@ -26,6 +26,7 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .global isKeyDown
 .global isKeyUp
 .global getRandom
+.global shutdown
 
 .section .kernel.data
 cur_random: .quad 107
@@ -164,4 +165,10 @@ getRandom:
     movq    $0, %rdx # No top 64 bits
     divq    %rdi # Divide the random with our limit
     movq    %rdx, %rax # Get the modulo of the division, as the result
+    ret
+
+shutdown:
+    movw    $0x2000, %ax
+    movw    $0x604, %dx
+    outw    %ax, %dx
     ret

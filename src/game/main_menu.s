@@ -165,7 +165,8 @@ difficulty_return:
 	ret 
 
 handle_option4:
-	ret 
+    call    shutdown
+    ret 
 
 main_menu_handle:
 	pushq   %rbp 
