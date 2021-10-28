@@ -73,7 +73,7 @@ player_loop:
 
 	cmpb	$1, player_dead 
 	jne     player_not_dead
-	
+
 	cmpb    $1, player_won 
 	jne     player_not_dead
 
@@ -357,6 +357,8 @@ detect_collision_player_bullet:
 
 		movq	%r15, %rdi
 		call 	get_ship_at_position
+
+		
 
 		movq 	(%rax), %rcx
 		movb 	%cl, %dl 		# x coordinate ship
