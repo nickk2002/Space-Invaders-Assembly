@@ -148,6 +148,7 @@ set_difficulty_hard:
 	ret 
 
 enemy_init:
+	call 	delete_ships
 	movq 	$1,wave_counter
 	call    enemy_handle_difficulties
 	call 	enemy_wave_1
@@ -369,16 +370,23 @@ create_basic_ship:
 
 	ret
 
+
+delete_ships:
+	movq	$0, number_of_ships
+	# current_pointer <- enemy_array
+	movq	enemy_array,%rax 
+	movq	%rax,current_pointer
+
+	ret 
+
+
 enemy_wave_3:
 
 
 	movq	$wave_3_created, %rdi
 	call    log_string
 
-	movq	$0, number_of_ships
-	# current_pointer <- enemy_array
-	movq	enemy_array,%rax 
-	movq	%rax,current_pointer
+	call    delete_ships
 	
 	// movb	$15, %dil  # x coord
 	// movb    $1, %sil  # ship type 1
@@ -419,10 +427,7 @@ enemy_wave_2:
 	movq	$wave_2_created, %rdi
 	call    log_string
 
-	movq	$0, number_of_ships
-	# current_pointer <- enemy_array
-	movq	enemy_array,%rax 
-	movq	%rax,current_pointer
+	call   delete_ships
 	
 	movb	$10, %dil  # x coord
 	movb    $1, %sil  # ship type 1
@@ -446,10 +451,7 @@ enemy_wave_1:
 	movq	$wave_1_created, %rdi
 	call    log_string
 
-	movq	$0, number_of_ships
-	# current_pointer <- enemy_array
-	movq	enemy_array,%rax 
-	movq	%rax,current_pointer
+	call    delete_ships
 	
 	movb	$10, %dil  # x coord
 	movb    $1, %sil  # ship type 1
@@ -684,6 +686,7 @@ detect_collision_enemy_bullet:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
+	pushq   %r15
 	movq 	number_of_ships, %r15
 	decq 	%r15
 
@@ -698,6 +701,10 @@ detect_collision_enemy_bullet:
 		# get the ship
 		movq	%r15, %rdi
 		call 	get_ship_at_position
+
+
+		cmpb 	$0, 8(%rax)
+		jle  	epilogue_dceb
 
 		# check collision
 		cmpb 	$24, 6(%rax)
@@ -726,15 +733,18 @@ detect_collision_enemy_bullet:
 
 	epilogue_dceb:
 		# epilogue
+		popq    %r15
 		movq    %rbp, %rsp
 		popq 	%rbp
 
+		ret 
 # rax - index of the ship that hit the player's bullet; if there was no hit returns -1
 detect_collision_two_bullets:
 	# prologue
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
+	pushq   %r15
 	movq 	number_of_ships, %r15
 	decq 	%r15
 
@@ -797,9 +807,10 @@ detect_collision_two_bullets:
 
 	epilogue_dctb:
 		# epilogue
+		popq    %r15
+
 		movq    %rbp, %rsp
 		popq 	%rbp
-
 		ret
 
 # %rdi parameter - pointer to the ship
@@ -808,6 +819,7 @@ delete_dead_ship:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
+
 	pushq 	%r15
 
 	movq 	%rdi, %r15
@@ -815,7 +827,7 @@ delete_dead_ship:
 	jne		epilogue_dds
 
 	# delete the ship
-	// movb 	$-1, 8(%r15) # set health to -1 so that it does not trigger delete ship again
+	movb 	$-1, 8(%r15) # set health to -1 so that it does not trigger delete ship again
 	movq 	%r15, %rdi
 	call 	swap
 
@@ -835,6 +847,7 @@ hanlde_ships:
 	# prologue
 	pushq   %rbp 
 	movq 	%rsp, %rbp
+
 
 	pushq 	%r14
 	pushq  	%r15
@@ -925,6 +938,12 @@ all_ships_killed:
 	jmp  	epilogue_ask
 
 	wave_blank:
+	movq 	number_of_ships, %rdi 
+	// decq	%rdi 
+	call    get_ship_at_position
+	movb    $0, 1(%rax)
+	movb    $0, 2(%rax)
+
 	call  	enemy_wave_blank 	# create another wave
 	jmp  	epilogue_ask
 

@@ -9,6 +9,7 @@
                                                            __/ |                         
                                                           |___/                          "
 
+    
     player_dead_message: .asciz "Press Q to return to the main menu\n _____                     _             _                        
 |  ___|                   (_)           | |                       
 | |__ _ __   ___ _ __ ___  _  ___  ___  | |__   __ ___   _____    
@@ -40,8 +41,8 @@
   | |_   _| |_ ___  _ __ _  __ _| |
   | | | | | __/ _ \\| '__| |/ _` | |
   | | |_| | || (_) | |  | | (_| | |
-  \\_/\\__,_|\\__\\___/|_|  |_|\\__,_|_|\n\nYou have to press left right to control the space ship.
-Good luck!\nEach ship that you destroy gives you points.Press W to shoot and have fun!"
+  \\_/\\__,_|\\__\\___/|_|  |_|\\__,_|_|\n\nYou have to press A and D to control the space ship.
+Good luck!\nEach ship that you destroy gives you points.Press W to shoot (or E if you are lazy) and have fun!"
 
 
 pattern_big_fat_bus: .asciz " _____ _            _     _          __      _     _                 _                           _                __                               
