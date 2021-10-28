@@ -7,9 +7,18 @@
 	enemy_ship_type_2: .asciz "|___   ___|
     | |"
     enemy_ship_type_3: .asciz "[__U__]"
-    enemy_ship_type_4: .asciz "QWERTY1234567890QWERTY1234567890"
-    enemy_ship_type_5: .asciz "QWERTY1234567890QWERTY1234567890"
-    enemy_ship_type_6: .asciz "QWERTY1234567890QWERTY1234567890"
+    enemy_ship_type_4: .asciz ""
+    enemy_ship_type_5: .asciz ""
+    enemy_ship_type_6: .asciz " .-------------------------------------------------------------.
+'------..-------------..----------..----------..----------..--.|
+|       \\\\           THE BIG FAT BUS          ||          ||  ||
+|        \\\\           ||          ||          ||          ||  ||
+|    ||   || //   //  ||   //  // ||//   //   ||   //   //|| /||
+|_.------\"''----------''----------''----------''----------''--'|
+| |      |  _-_  |       |       |    |  .-.    |      ||==| C|
+| |  __  |.'.-.' |   _   |   _   |    |.'.-.'.  |  __  | \"__=='
+'---------'|( )|'-----------| |---------'|( )|'----------\"\"
+"
 
 
 	ship_type_1: .byte 0  
@@ -41,28 +50,28 @@
 
 	ship_type_4: .byte 0
     enemy_ship_type_boss1_width: .byte 0
-   	enemy_ship_type_boss1_height:  .byte 1
-	enemy_ship_type_boss1_canon_x:  .byte 3
+   	enemy_ship_type_boss1_height:  .byte 8
+	enemy_ship_type_boss1_canon_x:  .byte 13
 	enemy_ship_type_boss1_points:  .byte 5
-	enemy_ship_type_boss1_movement:  .byte 0
+	enemy_ship_type_boss1_movement:  .byte 1
 	enemy_ship_type_boss1_full_auto:  .byte 1
 	enemy_ship_type_boss1_hp: .byte 1
 
 	ship_type_5: .byte 0
     enemy_ship_type_boss2_width: .byte 0
-   	enemy_ship_type_boss2_height:  .byte 1
-	enemy_ship_type_boss2_canon_x:  .byte 10
+   	enemy_ship_type_boss2_height:  .byte 8
+	enemy_ship_type_boss2_canon_x:  .byte 29
 	enemy_ship_type_boss2_points:  .byte 5
-	enemy_ship_type_boss2_movement:  .byte 0
+	enemy_ship_type_boss2_movement:  .byte 1
 	enemy_ship_type_boss2_full_auto:  .byte 1
 	enemy_ship_type_boss2_hp:	.byte 5
 
 	ship_type_6: .byte 0
-    enemy_ship_type_boss3_width: .byte 32
-   	enemy_ship_type_boss3_height:  .byte 1
-	enemy_ship_type_boss3_canon_x:  .byte 15
+    enemy_ship_type_boss3_width: .byte 64
+   	enemy_ship_type_boss3_height:  .byte 8
+	enemy_ship_type_boss3_canon_x:  .byte 43
 	enemy_ship_type_boss3_points:  .byte 5
-	enemy_ship_type_boss3_movement:  .byte 0
+	enemy_ship_type_boss3_movement:  .byte 1
 	enemy_ship_type_boss3_full_auto:  .byte 1
 	enemy_ship_type_boss3_hp:	.byte 5
 
@@ -100,7 +109,7 @@ set_difficulty_easy:
 	movb    $2, enemy_ship_type_1_hp
 	movb    $3, enemy_ship_type_2_hp
 	movb    $3, enemy_ship_type_3_hp
-	movb    $6, enemy_ship_type_boss1_hp
+	movb    $10, enemy_ship_type_boss1_hp
 	movb    $6, enemy_ship_type_boss2_hp
 	movb    $6, enemy_ship_type_boss3_hp
 
