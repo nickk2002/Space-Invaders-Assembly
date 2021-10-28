@@ -410,6 +410,18 @@ enemy_wave_3:
 	call  	create_basic_ship
 
 	movb 	$10, %dil
+	movb 	$4, %sil
+	call  	create_basic_ship
+
+	movb 	$10, %dil
+	movb 	$5, %sil
+	call  	create_basic_ship
+
+	movb 	$10, %dil
+	movb 	$5, %sil
+	call  	create_basic_ship
+
+	movb 	$10, %dil
 	movb 	$6, %sil
 	call  	create_basic_ship
 
@@ -916,7 +928,7 @@ all_ships_killed:
 	jmp  	standard_wave
 
 	boss_wave:
-		cmpq 	$2, number_of_ships
+		cmpq 	$5, number_of_ships
 		je 		wave_blank
 		jmp 	epilogue_ask
 
@@ -959,8 +971,32 @@ all_ships_killed:
 # %rdi parameter - pointer to the ship
 ship_move:
 	cmpb 	$0, 10(%rdi)
-	je  	epilgue_sh
+	je  	epilogue_sh
 
+	cmpq 	$3, wave_counter
+	jne  	normal_ship_movement
+
+	# boss ship movement
+	cmpb 	$6, 4(%rdi)
+	jne 	epilogue_sh  	# not real boss component (type 6)
+
+	pushq 	%rdi
+	movq  	$15, %rdi
+	call 	getRandom
+	cmpq 	$1, %rax
+	popq 	%rdi
+	jne 	epilogue_sh
+
+	pushq 	%rdi
+	movq  	$7, %rdi
+	call 	getRandom
+	movq 	$20, %rdi
+	mulq 	%rdi
+	incq 	%rax 	# %rax has now 0(?), 21, 41, 61, 81, 101, or 121
+	popq 	%rdi
+	movb 	%al, 10(%rdi)
+
+	normal_ship_movement:
 	cmpb 	$21, 10(%rdi)
 	je  	enemy_ship_move_left
 
@@ -968,7 +1004,7 @@ ship_move:
 	je  	enemy_ship_move_left
 
 	cmpb 	$61, 10(%rdi)
-	je  	enemy_ship_move_up
+	je  	enemy_ship_move_down
 
 	cmpb 	$81, 10(%rdi)
 	je  	enemy_ship_move_right
@@ -977,32 +1013,115 @@ ship_move:
 	je  	enemy_ship_move_right
 
 	cmpb 	$121, 10(%rdi)
-	je  	enemy_ship_move_down
+	je  	enemy_ship_move_up
 
 	incb 	10(%rdi)
-	jmp 	epilgue_sh
+	jmp 	epilogue_sh
 
 	enemy_ship_move_down:
-		decb 	1(%rdi)
-		incb 	10(%rdi)
-		movb 	$1, 10(%rdi)
-		jmp 	epilgue_sh
+		cmpq 	$3, wave_counter
+		jne  	normal_ship_movement_down
 
-	enemy_ship_move_right:
-		incb 	(%rdi)
-		incb 	10(%rdi)
-		jmp 	epilgue_sh
+		movb 	$20, %r8b
+		subb 	3(%rdi), %r8b
+		cmpb 	%r8b, 1(%rdi)
+		jge  	epilogue_sh
 
-	enemy_ship_move_up:
+		incb 	1(%rdi)
+		subq 	$16, %rdi
+		incb 	1(%rdi)
+		subq 	$16, %rdi
+		incb 	1(%rdi)
+		subq 	$16, %rdi
+		incb 	1(%rdi)
+		subq 	$16, %rdi
+		incb 	1(%rdi)
+		subq 	$16, %rdi
+		incb 	1(%rdi)
+		jmp  	epilogue_sh
+
+		normal_ship_movement_down:
 		incb 	1(%rdi)
 		incb 	10(%rdi)
-		jmp 	epilgue_sh	
+		jmp 	epilogue_sh
+
+	enemy_ship_move_right:
+		cmpq 	$3, wave_counter
+		jne  	normal_ship_movement_right
+
+		movb 	$80, %r8b
+		subb 	2(%rdi), %r8b
+		cmpb 	%r8b, (%rdi)
+		jge  	epilogue_sh
+
+		incb 	(%rdi)
+		subq 	$16, %rdi
+		incb 	(%rdi)
+		subq 	$16, %rdi
+		incb 	(%rdi)
+		subq 	$16, %rdi
+		incb 	(%rdi)
+		subq 	$16, %rdi
+		incb 	(%rdi)
+		subq 	$16, %rdi
+		incb 	(%rdi)
+		jmp  	epilogue_sh
+
+		normal_ship_movement_right:
+		incb 	(%rdi)
+		incb 	10(%rdi)
+		jmp 	epilogue_sh
+
+	enemy_ship_move_up:
+		cmpq 	$3, wave_counter
+		jne  	normal_ship_movement_up
+
+		cmpb 	$4, 1(%rdi)
+		jle  	epilogue_sh
+
+		decb 	1(%rdi)
+		subq 	$16, %rdi
+		decb 	1(%rdi)
+		subq 	$16, %rdi
+		decb 	1(%rdi)
+		subq 	$16, %rdi
+		decb 	1(%rdi)
+		subq 	$16, %rdi
+		decb 	1(%rdi)
+		subq 	$16, %rdi
+		decb 	1(%rdi)
+		jmp  	epilogue_sh
+
+		normal_ship_movement_up:
+		decb 	1(%rdi)
+		movb 	$1, 10(%rdi)
+		jmp 	epilogue_sh	
 
 	enemy_ship_move_left:
+		cmpq 	$3, wave_counter
+		jne  	normal_ship_movement_left
+
+		cmpb 	$1, (%rdi)
+		jle 	epilogue_sh
+
+		decb 	(%rdi)
+		subq 	$16, %rdi
+		decb 	(%rdi)
+		subq 	$16, %rdi
+		decb 	(%rdi)
+		subq 	$16, %rdi
+		decb 	(%rdi)
+		subq 	$16, %rdi
+		decb 	(%rdi)
+		subq 	$16, %rdi
+		decb 	(%rdi)
+		jmp  	epilogue_sh
+
+		normal_ship_movement_left:
 		decb 	(%rdi)
 		incb 	10(%rdi)
 
-	epilgue_sh:
+	epilogue_sh:
 		ret
 
 # %rdi parameter - the pointer to the ship
