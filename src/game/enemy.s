@@ -6,7 +6,7 @@
 	enemy_ship_type_1: .asciz "\\__Y__/"
 	enemy_ship_type_2: .asciz "|___   ___|
     | |"
-    enemy_ship_type_3: .asciz "[__U__]"
+    enemy_ship_type_3: .asciz "[___U___]"
     enemy_ship_type_4: .asciz ""
     enemy_ship_type_5: .asciz ""
     enemy_ship_type_6: .asciz " .-------------------------------------------------------------.
@@ -40,10 +40,10 @@
 	enemy_ship_type_2_hp: .byte 2
 
 	ship_type_3: .byte 0
-    enemy_ship_type_3_width: .byte 7
+    enemy_ship_type_3_width: .byte 9
    	enemy_ship_type_3_height:  .byte 1
 	enemy_ship_type_3_canon_x:  .byte 3
-	enemy_ship_type_3_points:  .byte 5
+	enemy_ship_type_3_points:  .byte 10
 	enemy_ship_type_3_movement:  .byte 1
 	enemy_ship_type_3_full_auto:  .byte 1
 	enemy_ship_type_3_hp: .byte 3
@@ -380,7 +380,7 @@ delete_ships:
 	ret 
 
 
-enemy_wave_3:
+enemy_wave_4:
 
 
 	movq	$wave_3_created, %rdi
@@ -388,17 +388,6 @@ enemy_wave_3:
 
 	call    delete_ships
 	
-	// movb	$15, %dil  # x coord
-	// movb    $1, %sil  # ship type 1
-	// call    create_basic_ship
-
-	// movb	$40, %dil  # x coord
-	// movb    $3, %sil  # ship type 3
-	// call    create_basic_ship
-
-	// movb	$65, %dil  # x coord
-	// movb    $2, %sil  # ship type 2
-	// call    create_basic_ship
 
 	# THE BOSSS
 	movb 	$10, %dil
@@ -408,6 +397,8 @@ enemy_wave_3:
 	movb 	$10, %dil
 	movb 	$5, %sil
 	call  	create_basic_ship
+
+
 
 	movb 	$10, %dil
 	movb 	$4, %sil
@@ -433,6 +424,31 @@ enemy_wave_3:
     # TODO move this from game.s
     movq    $pattern_big_fat_bus, %rdi
     call    start_pattern_animation
+	ret
+
+enemy_wave_3:
+	call    delete_ships
+
+
+
+
+	movb	$20, %dil  # x coord
+	movb    $3, %sil  # ship type 3
+	call    create_basic_ship
+
+	movb	$20, %dil  # x coord
+	movb    $3, %sil  # ship type 3
+	call    create_basic_ship
+
+	movb	$20, %dil  # x coord
+	movb    $3, %sil  # ship type 3
+	call    create_basic_ship
+
+	movb	$20, %dil  # x coord
+	movb    $3, %sil  # ship type 3
+	call    create_basic_ship
+
+
 	ret
 
 enemy_wave_2:
@@ -469,9 +485,37 @@ enemy_wave_1:
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
+	movzb   default_y_spawn_pos, %rax
+	movb    $6, default_y_spawn_pos
+
+	movb	$10, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
 	movb	$50, %dil  # x coord
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
+
+
+	movzb   default_y_spawn_pos, %rax
+	movb    $6, default_y_spawn_pos
+
+	movb	$30, %dil  # x coord
+	movb    $3, %sil  # ship type 3
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
+	movb	$30, %dil  # x coord
+	movb    $3, %sil  # ship type 3
+	call    create_basic_ship
+
+	movb	$30, %dil  # x coord
+	movb    $3, %sil  # ship type 3
+	call    create_basic_ship
+
 
 	ret
 
@@ -835,9 +879,12 @@ delete_dead_ship:
 	pushq 	%r15
 
 	movq 	%rdi, %r15
+
 	cmpb 	$0, 8(%r15) # check if the health is 0
 	jne		epilogue_dds
 
+	movb    $0, 1(%r15)
+	movb    $1, 2(%r15)
 	# delete the ship
 	movb 	$-1, 8(%r15) # set health to -1 so that it does not trigger delete ship again
 	movq 	%r15, %rdi
@@ -920,14 +967,15 @@ swap:
 	ret
 
 all_ships_killed:
-	cmpq 	$3, wave_counter
-	je  	boss_wave
+	cmpq 	$4, wave_counter
+	je  	boss_wave  # 4 wave is boss
 
 	cmpq 	$0, number_of_ships
 	jne 	epilogue_ask
 	jmp  	standard_wave
 
 	boss_wave:
+		# check if one ship was killed from the ships
 		cmpq 	$5, number_of_ships
 		je 		wave_blank
 		jmp 	epilogue_ask
@@ -935,7 +983,7 @@ all_ships_killed:
 
 	standard_wave:
 		incq 	wave_counter
-		cmpq 	$3, wave_counter
+		cmpq 	$4, wave_counter
 		jg  	epilogue_ask
 
 		cmpq 	$2, wave_counter
@@ -954,16 +1002,22 @@ all_ships_killed:
 	call  	enemy_wave_3 	# create another wave
 	jmp  	epilogue_ask
 
-	wave_blank:
-	movq 	number_of_ships, %rdi 
-	// decq	%rdi 
-	call    get_ship_at_position
-	movb    $0, 1(%rax)
-	movb    $0, 2(%rax)
+	wave4:
+	movq	$0, number_of_ships
+	call    enemy_wave_4 
+	jmp     epilogue_ask
 
-	movq 	$0, number_of_ships
-	call  	enemy_wave_blank 	# create another wave
-	jmp  	epilogue_ask
+
+	wave_blank:
+		movq 	number_of_ships, %rdi 
+		// decq	%rdi 
+		call    get_ship_at_position
+		movb    $0, 1(%rax)
+		movb    $0, 2(%rax)
+
+		movq 	$0, number_of_ships
+		call  	enemy_wave_blank 	# create another wave
+		jmp  	epilogue_ask
 
 	epilogue_ask:
 		ret
