@@ -34,6 +34,7 @@
 	initial_health_medium: .byte 5
 	initial_health_hard: .byte 3
 	player_dead: .byte 0
+	player_won: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
 	jumptable:
@@ -55,6 +56,7 @@ player_init:
 	movb 	%al, player_size
 
 	movb    $0, player_dead
+	movb 	$0, player_won
 	movb    $0, player_points
 
 	# epilogue		
@@ -67,6 +69,9 @@ player_init:
 player_loop:
 
 	cmpb	$1, player_dead 
+	jne     player_not_dead
+	
+	cmpb    $1, player_won 
 	jne     player_not_dead
 
 	jmp 	end_player_loop

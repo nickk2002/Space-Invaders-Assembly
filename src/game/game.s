@@ -87,19 +87,30 @@ reset_keypress_info:
 
 
 not_first_run:
-    cmpb    $0, player_dead 
-    je     1f  
-    call    player_dead_screen
-    jmp     2f
+    cmpb    $1, player_dead 
+    jne     1f
 
-    1:
-    # player is not dead
+    pld: 
+        # player is dead
+        call    player_dead_screen
+        jmp     do_nothing
+    1: 
+
+    cmpb    $1, player_won
+    jne     continue_playing  
+    player_won_game:
+        call    player_won_screen
+        jmp     do_nothing
+
+
+    continue_playing:  
+    # player is not dead and is still playing
 	call 	clear_screen
     call 	player_loop
     call 	enemy_loop
     call 	display_information
 
-    2:
+    do_nothing:
 
 
 game_loop_end:

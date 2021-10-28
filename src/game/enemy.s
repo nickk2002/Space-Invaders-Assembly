@@ -40,7 +40,7 @@
 	enemy_ship_type_3_hp: .byte 3
 
 	ship_type_4: .byte 0
-    enemy_ship_type_boss1_width: .byte 32
+    enemy_ship_type_boss1_width: .byte 0
    	enemy_ship_type_boss1_height:  .byte 1
 	enemy_ship_type_boss1_canon_x:  .byte 3
 	enemy_ship_type_boss1_points:  .byte 5
@@ -49,7 +49,7 @@
 	enemy_ship_type_boss1_hp: .byte 1
 
 	ship_type_5: .byte 0
-    enemy_ship_type_boss2_width: .byte 32
+    enemy_ship_type_boss2_width: .byte 0
    	enemy_ship_type_boss2_height:  .byte 1
 	enemy_ship_type_boss2_canon_x:  .byte 10
 	enemy_ship_type_boss2_points:  .byte 5
@@ -371,29 +371,30 @@ enemy_wave_3:
 	movq	enemy_array,%rax 
 	movq	%rax,current_pointer
 	
-	movb	$15, %dil  # x coord
-	movb    $1, %sil  # ship type 1
-	call    create_basic_ship
+	// movb	$15, %dil  # x coord
+	// movb    $1, %sil  # ship type 1
+	// call    create_basic_ship
 
-	movb	$40, %dil  # x coord
-	movb    $3, %sil  # ship type 3
-	call    create_basic_ship
+	// movb	$40, %dil  # x coord
+	// movb    $3, %sil  # ship type 3
+	// call    create_basic_ship
 
-	movb	$65, %dil  # x coord
-	movb    $2, %sil  # ship type 2
-	call    create_basic_ship
+	// movb	$65, %dil  # x coord
+	// movb    $2, %sil  # ship type 2
+	// call    create_basic_ship
 
-	// movb 	$10, %dil
-	// movb 	$4, %sil
-	// call  	create_basic_ship
+	# THE BOSSS
+	movb 	$10, %dil
+	movb 	$4, %sil
+	call  	create_basic_ship
 
-	// movb 	$10, %dil
-	// movb 	$5, %sil
-	// call  	create_basic_ship
+	movb 	$10, %dil
+	movb 	$5, %sil
+	call  	create_basic_ship
 
-	// movb 	$10, %dil
-	// movb 	$6, %sil
-	// call  	create_basic_ship
+	movb 	$10, %dil
+	movb 	$6, %sil
+	call  	create_basic_ship
 
     # Start the boss music
     movb $0, %dil
@@ -449,6 +450,7 @@ enemy_wave_1:
 
 enemy_wave_blank:
 	movq 	$0, number_of_ships
+	movb    $1, player_won
     call    pause_song # Pause the current song
     # TODO player a win song maybe?
 	ret
