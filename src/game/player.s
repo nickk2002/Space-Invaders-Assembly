@@ -31,9 +31,9 @@
 
 	nr_lives: .byte 3
 
-	initial_health_easy: .byte 10
-	initial_health_medium: .byte 5
-	initial_health_hard: .byte 3
+	initial_health_easy: .byte 100
+	initial_health_medium: .byte 80
+	initial_health_hard: .byte 60
 	player_dead: .byte 0
 	player_won: .byte 0
 
