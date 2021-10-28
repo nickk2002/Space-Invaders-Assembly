@@ -25,6 +25,16 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .section .game.data
 is_first_run: .byte 1
 init_done_str: .asciz "[INFO]: GameInit() done"
+pattern_animate_test: .asciz "==================================================test this is a test wow so much tesxt here this is a test =========== asdfkjawnetioj4@#$@#%T^@\nasdasdasdasd"
+
+pattern_big_fat_bus: .asciz " _____ _            _     _          __      _     _                 _                           _                __                               
+|_   _| |          | |   (_)        / _|    | |   | |               (_)                         (_)              / _|                              
+  | | | |__   ___  | |__  _  __ _  | |_ __ _| |_  | |__  _   _ ___   _ ___    ___ ___  _ __ ___  _ _ __   __ _  | |_ ___  _ __   _   _  ___  _   _ 
+  | | | '_ \\ / _ \\ | '_ \\| |/ _` | |  _/ _` | __| | '_ \\| | | / __| | / __|  / __/ _ \\| '_ ` _ \\| | '_ \\ / _` | |  _/ _ \\| '__| | | | |/ _ \\| | | |
+  | | | | | |  __/ | |_) | | (_| | | || (_| | |_  | |_) | |_| \\__ \\ | \\__ \\ | (_| (_) | | | | | | | | | | (_| | | || (_) | |    | |_| | (_) | |_| |
+  \\_/ |_| |_|\\___| |_.__/|_|\\__, | |_| \\__,_|\\__| |_.__/ \\__,_|___/ |_|___/  \\___\\___/|_| |_| |_|_|_| |_|\\__, | |_| \\___/|_|     \\__, |\\___/ \\__,_|
+                             __/ |                                                                        __/ |                   __/ |            
+                            |___/                                                                        |___/                   |___/             "
 
 .section .game.text
 
@@ -37,6 +47,9 @@ gameInit:
     movq $init_done_str, %rdi
     call log_string
     call log_newline
+
+    /*movq $pattern_big_fat_bus, %rdi*/
+    /*call start_pattern_animation*/
     # TODO fix this
     // call 	timer_init
 
@@ -76,12 +89,20 @@ reset_keypress_info:
 not_first_run:
     cmpb    $0, player_dead 
     je     1f  
+    # Stops the boss music
+    # TODO: a litte song when the player loses?
+    call    pause_song
     call    player_dead_screen
     jmp     2f
 
     1:
     # player is not dead
 	call 	clear_screen
+    cmpb    $1, is_animation_running
+    jne     3f
+    call    do_pattern_animation
+    jmp     2f
+    3:
     call 	player_loop
     call 	enemy_loop
     call 	display_information

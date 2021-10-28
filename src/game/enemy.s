@@ -294,6 +294,10 @@ enemy_wave_3:
     movb $0, %dil
     call play_song
 
+    # Do the big fat bus animation
+    # TODO move this from game.s
+    movq    $pattern_big_fat_bus, %rdi
+    call    start_pattern_animation
 	ret
 
 enemy_wave_2:
