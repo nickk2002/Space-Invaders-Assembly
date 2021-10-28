@@ -25,22 +25,34 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .section .game.data
 is_first_run: .byte 1
 init_done_str: .asciz "[INFO]: GameInit() done"
+game_loop_str: .asciz "[INFO]: GameStarted() done"
 
 .section .game.text
 
 gameInit:
 
 	call 	clear_screen
-	call 	player_init
-	call 	enemy_wave_1
 
-    movq $init_done_str, %rdi
-    call log_string
-    call log_newline
+	
+
+    movq    $init_done_str, %rdi
+    call    log_string
+    call    log_newline
     # TODO fix this
     // call 	timer_init
 
 	ret
+# run when the game is started again
+game_started:
+
+    call    player_init
+    call    enemy_init
+    
+    movq    $game_loop_str, %rdi
+    call    log_string
+    call    log_newline
+
+    ret 
 
 gameLoop:	
 	# prologue
@@ -63,6 +75,7 @@ game_loop_running:
     cmpb 	$1, is_first_run
     jne 	not_first_run
     movb 	$0, is_first_run
+
 
     # Do things here when game is launched from the main menu for the first time
     movq 	$0, %rdi

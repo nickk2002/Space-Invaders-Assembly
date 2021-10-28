@@ -7,10 +7,10 @@
 
 	current_timer:   .quad 0 # keeps track of the current timer of the main_loop
 							 # can be in the range [0, main_loop_fps - 1]
-	main_loop_fps:   .quad 30 # how fast does the main loop go
+	main_loop_fps:   .quad 180 # how fast does the main loop go
 
-	game_loop_fps: 	.quad 30 # how fast does the game_loop go
-
+	game_loop_fps_easy: 	.quad 30 # how fast does the game_loop go
+	game_loop_fps_medium:   .quad 40 
 
 	timer_attributes_byte: .byte 16 # byte -> size of the timer struct
 	timer_array: .skip 1024    # array of timers
@@ -88,11 +88,11 @@ timer_init:
 	# add the Timer for the gameLoop
 	# $gameLoop -> address of the gameLoop label
 
-	movq	game_loop_fps, %rdi 
+	movq	game_loop_fps_easy, %rdi 
 	movq	$gameLoop, %rsi  
 	call    add_timer
 
-	// movq	$30, %rdi 
+	// movq	$180, %rdi 
 	// movq	$audio_loop, %rsi  
 	// call    add_timer
 
@@ -118,6 +118,21 @@ handle_timer:
 
 
 	incq	current_timer # increase the current timer
+
+
+	cmpb    $60, current_timer
+	je      do_loop 
+
+	cmpb    $120, current_timer
+	je      do_loop  
+
+	cmpb    $180, current_timer
+	je      do_loop
+	jmp     1f
+	do_loop:
+	call    audio_loop
+
+	1:
 
 	movq	current_timer, %rax 
 	cmpq 	%rax, main_loop_fps # check if we have reached the main loop fps

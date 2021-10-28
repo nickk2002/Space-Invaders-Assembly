@@ -30,7 +30,9 @@
 
 	nr_lives: .byte 3
 
-	initial_health: .byte 10
+	initial_health_easy: .byte 10
+	initial_health_medium: .byte 5
+	initial_health_hard: .byte 3
 	player_dead: .byte 0
 
 # jumptable containing the addresses of the subroutines selected by the switch
@@ -53,9 +55,6 @@ player_init:
 	movb 	%al, player_size
 
 	movb    $0, player_dead
-	movb    initial_health, %ah
-	movb 	%ah, nr_lives
-
 	movb    $0, player_points
 
 	# epilogue		

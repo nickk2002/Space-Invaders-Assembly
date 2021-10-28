@@ -79,12 +79,9 @@ player_dead_screen:
     cmpb 	$0x10, %al # If Q is pressed
 
     jne     1f
-    movq	$42, %rdi 
-    call    log_numq
-	movq 	$5, current_option
 
+	movq 	$5, current_option
 	movb 	$0, exiting_main_menu
-	call    gameInit
 
 
     1:
@@ -96,6 +93,8 @@ handle_option1:
     # TODO: the game doesn't start if other options were used before
     # Game loop is going to detect this option and run the game
     # So nothing to print here
+    call    game_started
+
 	ret 
 
 handle_option2:
@@ -154,8 +153,8 @@ handle_option3:
 change_difficulty:
     movb 	%sil, difficulty_level
 
-	movb	difficulty_level, %dil 
-	call    log_numb
+	// movb	difficulty_level, %dil 
+	// call    log_numb
 
     movb    $0, exiting_main_menu
 

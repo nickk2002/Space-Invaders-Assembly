@@ -19,6 +19,7 @@
 	enemy_ship_type_1_points:  .byte 1
 	enemy_ship_type_1_movement:  .byte 1
 	enemy_ship_type_1_full_auto:  .byte 0
+	enemy_ship_type_1_hp: .byte 1
 
 	ship_type_2: .byte 0
     enemy_ship_type_2_width: .byte 11
@@ -27,6 +28,7 @@
 	enemy_ship_type_2_points:  .byte 3
 	enemy_ship_type_2_movement:  .byte 0
 	enemy_ship_type_2_full_auto:  .byte 1
+	enemy_ship_type_2_hp: .byte 2
 
 	ship_type_3: .byte 0
     enemy_ship_type_3_width: .byte 7
@@ -35,6 +37,7 @@
 	enemy_ship_type_3_points:  .byte 5
 	enemy_ship_type_3_movement:  .byte 1
 	enemy_ship_type_3_full_auto:  .byte 1
+	enemy_ship_type_3_hp: .byte 3
 
 	ship_type_4: .byte 0
     enemy_ship_type_boss1_width: .byte 32
@@ -43,6 +46,7 @@
 	enemy_ship_type_boss1_points:  .byte 5
 	enemy_ship_type_boss1_movement:  .byte 0
 	enemy_ship_type_boss1_full_auto:  .byte 1
+	enemy_ship_type_boss1_hp: .byte 1
 
 	ship_type_5: .byte 0
     enemy_ship_type_boss2_width: .byte 32
@@ -51,6 +55,7 @@
 	enemy_ship_type_boss2_points:  .byte 5
 	enemy_ship_type_boss2_movement:  .byte 0
 	enemy_ship_type_boss2_full_auto:  .byte 1
+	enemy_ship_type_boss2_hp:	.byte 5
 
 	ship_type_6: .byte 0
     enemy_ship_type_boss3_width: .byte 32
@@ -59,6 +64,7 @@
 	enemy_ship_type_boss3_points:  .byte 5
 	enemy_ship_type_boss3_movement:  .byte 0
 	enemy_ship_type_boss3_full_auto:  .byte 1
+	enemy_ship_type_boss3_hp:	.byte 5
 
 .data
 	pos_y:  .quad 0
@@ -68,9 +74,96 @@
 	number_of_ships: .quad 0
 	attribute_count: .quad 16
 	wave_counter: .quad 1
+	easy_string: .asciz "[Difficulty]: easy\n"
+	medium_string: .asciz "[Difficulty]: medium\n"
+	hard_string: .asciz "[Difficulty]: hard\n"
+	wave_1_created: .asciz "[Waves]: Wave 1 created!\n"
+	wave_2_created: .asciz "[Waves]: Wave 2 created!\n"
+	wave_3_created: .asciz "[Waves]: The boss created!\n"
 
-.global number_of_ships, get_ship_at_position, enemy_loop
+jumptable_difficulties:
+	.quad set_difficulty_easy
+	.quad set_difficulty_medium
+	.quad set_difficulty_hard
 
+.global number_of_ships, get_ship_at_position, enemy_loop,enemy_init
+
+
+set_difficulty_easy:
+	movq	$easy_string, %rdi 
+	call    log_string
+
+	#init player easy lives
+	movb    initial_health_easy, %ah
+	movb 	%ah, nr_lives
+
+	movb    $2, enemy_ship_type_1_hp
+	movb    $3, enemy_ship_type_2_hp
+	movb    $3, enemy_ship_type_3_hp
+	movb    $6, enemy_ship_type_boss1_hp
+	movb    $6, enemy_ship_type_boss2_hp
+	movb    $6, enemy_ship_type_boss3_hp
+
+	ret 
+
+set_difficulty_medium:
+	movq	$medium_string, %rdi 
+	call    log_string
+
+	#init player medium lives
+	movb    initial_health_medium, %ah
+	movb 	%ah, nr_lives
+
+	movb    $4, enemy_ship_type_1_hp
+	movb    $4, enemy_ship_type_2_hp
+	movb    $6, enemy_ship_type_3_hp
+	movb    $8, enemy_ship_type_boss1_hp
+	movb    $8, enemy_ship_type_boss2_hp
+	movb    $8, enemy_ship_type_boss3_hp
+	ret 
+
+set_difficulty_hard:
+	movq	$hard_string, %rdi 
+	call    log_string
+
+	#init player hard lives
+	movb    initial_health_hard, %ah
+	movb 	%ah, nr_lives
+
+	movb    $5, enemy_ship_type_1_hp
+	movb    $8, enemy_ship_type_2_hp
+	movb    $8, enemy_ship_type_3_hp
+	movb    $10, enemy_ship_type_boss1_hp
+	movb    $10, enemy_ship_type_boss2_hp
+	movb    $10, enemy_ship_type_boss3_hp
+	ret 
+
+enemy_init:
+	movq 	$1,wave_counter
+	call    enemy_handle_difficulties
+	call 	enemy_wave_1
+	ret
+
+enemy_handle_difficulties:
+	
+	movq	$0, %rdi 	
+	cmpb	$1, difficulty_level
+	je 		handle_difficulty
+	incq	%rdi 
+
+	cmpb	$2, difficulty_level
+	je 		handle_difficulty
+	incq	%rdi 
+
+	cmpb	$3, difficulty_level
+	je 		handle_difficulty
+	incq	%rdi 
+
+	handle_difficulty:
+		call	*jumptable_difficulties(,%rdi,8)
+
+	ret
+	
 enemy_loop:
 	call print_all_enemy_ships
 	call detect_collision_enemy_bullet
@@ -218,6 +311,7 @@ create_basic_ship:
 	call    get_ship_pointer_from_type
 	popq    %rdi 
 
+	pushq 	 %rax
 	pushq    %rsi 
 
 	# rdi -> dil from the parameter x coord
@@ -231,7 +325,7 @@ create_basic_ship:
 	movb 	5(%rax), %r14b # movement parameter of the ship
 	xorq 	%r13, %r13
 	movb 	6(%rax), %r13b # full auto boolean
-	popq 	%rax
+	popq 	%rax       # get type of the ship back
 	movb    %al,  %r8b # type of the ship
 	addb	%dil, %r9b # x coord bullet
 
@@ -242,7 +336,14 @@ create_basic_ship:
 
 	movb 	%r13b, %r11b # default shooting value based on full auto boolean 
 
-	pushq 	$3 # 3 hp
+	popq	%rax    # get pointer back
+	movb	7(%rax), %al
+	andq    $0xff, %rax
+	// movq	%rax, %rdi 
+	// call    log_numq
+
+	pushq 	%rax # hp of the ship
+
 	pushq 	$2 # colour
 	pushq 	%r14 # movement
 	pushq 	%r15 # points for killing the ship
@@ -260,38 +361,46 @@ create_basic_ship:
 	ret
 
 enemy_wave_3:
+
+	movq	$wave_3_created, %rdi
+	call    log_string
+
+
 	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
 	movq	enemy_array,%rax 
 	movq	%rax,current_pointer
 	
-	// movb	$15, %dil  # x coord
-	// movb    $1, %sil  # ship type 1
-	// call    create_basic_ship
+	movb	$15, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
 
-	// movb	$40, %dil  # x coord
-	// movb    $3, %sil  # ship type 3
-	// call    create_basic_ship
+	movb	$40, %dil  # x coord
+	movb    $3, %sil  # ship type 3
+	call    create_basic_ship
 
-	// movb	$65, %dil  # x coord
-	// movb    $2, %sil  # ship type 2
-	// call    create_basic_ship
+	movb	$65, %dil  # x coord
+	movb    $2, %sil  # ship type 2
+	call    create_basic_ship
 
-	movb 	$10, %dil
-	movb 	$4, %sil
-	call  	create_basic_ship
+	// movb 	$10, %dil
+	// movb 	$4, %sil
+	// call  	create_basic_ship
 
-	movb 	$10, %dil
-	movb 	$5, %sil
-	call  	create_basic_ship
+	// movb 	$10, %dil
+	// movb 	$5, %sil
+	// call  	create_basic_ship
 
-	movb 	$10, %dil
-	movb 	$6, %sil
-	call  	create_basic_ship
+	// movb 	$10, %dil
+	// movb 	$6, %sil
+	// call  	create_basic_ship
 
 	ret
 
 enemy_wave_2:
+	movq	$wave_2_created, %rdi
+	call    log_string
+
 	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
 	movq	enemy_array,%rax 
@@ -316,6 +425,9 @@ enemy_wave_2:
 	ret
 
 enemy_wave_1:
+	movq	$wave_1_created, %rdi
+	call    log_string
+
 	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
 	movq	enemy_array,%rax 
@@ -807,12 +919,18 @@ ship_move:
 	je  	enemy_ship_move_left
 
 	cmpb 	$41, 10(%rdi)
-	je  	enemy_ship_move_up
+	je  	enemy_ship_move_left
 
 	cmpb 	$61, 10(%rdi)
-	je  	enemy_ship_move_right
+	je  	enemy_ship_move_up
 
 	cmpb 	$81, 10(%rdi)
+	je  	enemy_ship_move_right
+
+	cmpb 	$101, 10(%rdi)
+	je  	enemy_ship_move_right
+
+	cmpb 	$121, 10(%rdi)
 	je  	enemy_ship_move_down
 
 	incb 	10(%rdi)
