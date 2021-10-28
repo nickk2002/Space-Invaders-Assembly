@@ -55,7 +55,7 @@
 	enemy_ship_type_boss1_points:  .byte 5
 	enemy_ship_type_boss1_movement:  .byte 1
 	enemy_ship_type_boss1_full_auto:  .byte 1
-	enemy_ship_type_boss1_hp: .byte 1
+	enemy_ship_type_boss1_hp: .byte 25
 
 	ship_type_5: .byte 0
     enemy_ship_type_boss2_width: .byte 0
@@ -64,7 +64,7 @@
 	enemy_ship_type_boss2_points:  .byte 5
 	enemy_ship_type_boss2_movement:  .byte 1
 	enemy_ship_type_boss2_full_auto:  .byte 1
-	enemy_ship_type_boss2_hp:	.byte 5
+	enemy_ship_type_boss2_hp:	.byte 25
 
 	ship_type_6: .byte 0
     enemy_ship_type_boss3_width: .byte 64
@@ -73,7 +73,7 @@
 	enemy_ship_type_boss3_points:  .byte 5
 	enemy_ship_type_boss3_movement:  .byte 1
 	enemy_ship_type_boss3_full_auto:  .byte 1
-	enemy_ship_type_boss3_hp:	.byte 5
+	enemy_ship_type_boss3_hp:	.byte 25
 
 .data
 	pos_y:  .quad 0
@@ -106,12 +106,10 @@ set_difficulty_easy:
 	movb    initial_health_easy, %ah
 	movb 	%ah, nr_lives
 
-	movb    $2, enemy_ship_type_1_hp
+	movb    $1, enemy_ship_type_1_hp
 	movb    $3, enemy_ship_type_2_hp
 	movb    $3, enemy_ship_type_3_hp
-	movb    $10, enemy_ship_type_boss1_hp
-	movb    $6, enemy_ship_type_boss2_hp
-	movb    $6, enemy_ship_type_boss3_hp
+	movb    $15, enemy_ship_type_boss3_hp
 
 	ret 
 
@@ -126,9 +124,7 @@ set_difficulty_medium:
 	movb    $4, enemy_ship_type_1_hp
 	movb    $4, enemy_ship_type_2_hp
 	movb    $6, enemy_ship_type_3_hp
-	movb    $8, enemy_ship_type_boss1_hp
-	movb    $8, enemy_ship_type_boss2_hp
-	movb    $8, enemy_ship_type_boss3_hp
+	movb    $20, enemy_ship_type_boss3_hp
 	ret 
 
 set_difficulty_hard:
@@ -142,9 +138,7 @@ set_difficulty_hard:
 	movb    $5, enemy_ship_type_1_hp
 	movb    $8, enemy_ship_type_2_hp
 	movb    $8, enemy_ship_type_3_hp
-	movb    $10, enemy_ship_type_boss1_hp
-	movb    $10, enemy_ship_type_boss2_hp
-	movb    $10, enemy_ship_type_boss3_hp
+	movb    $30, enemy_ship_type_boss3_hp
 	ret 
 
 enemy_init:
@@ -429,27 +423,87 @@ enemy_wave_4:
 enemy_wave_3:
 	call    delete_ships
 
-
-
-
-	movb	$20, %dil  # x coord
-	movb    $3, %sil  # ship type 3
+	
+	movb	$15, %dil  # x coord
+	movb    $3, %sil  # ship type 1
 	call    create_basic_ship
 
-	movb	$20, %dil  # x coord
-	movb    $3, %sil  # ship type 3
+	movb    $7, default_y_spawn_pos
+	movb	$15, %dil  # x coord
+	movb    $2, %sil  # ship type 1
 	call    create_basic_ship
 
-	movb	$20, %dil  # x coord
-	movb    $3, %sil  # ship type 3
+	movb    $4, default_y_spawn_pos
+
+	movb    $10, default_y_spawn_pos
+	movb	$15, %dil  # x coord
+	movb    $3, %sil  # ship type 1
 	call    create_basic_ship
 
-	movb	$20, %dil  # x coord
-	movb    $3, %sil  # ship type 3
+	movb    $4, default_y_spawn_pos
+
+	# HERE
+	movb	$60, %dil  # x coord
+	movb    $2, %sil  # ship type 1
 	call    create_basic_ship
+	
+	movb    $60, default_y_spawn_pos
+	movb	$15, %dil  # x coord
+	movb    $3, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
+	movb    $10, default_y_spawn_pos
+	movb	$60, %dil  # x coord
+	movb    $3, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
+
+	movb    $0, enemy_ship_type_3_movement
+	movb	$25, %dil  # x coord
+	movb    $3, %sil  # ship type 1
+	call    create_basic_ship
+	
+	movb    $1, enemy_ship_type_3_movement
+
+	movb    $7, default_y_spawn_pos
+	movb	$25, %dil  # x coord
+	movb    $2, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
+	movb    $10, default_y_spawn_pos
+	movb	$25, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
+
+	movb	$45, %dil  # x coord
+	movb    $2, %sil  # ship type 1
+	call    create_basic_ship
+	
+	movb    $7, default_y_spawn_pos
+	movb	$45, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $10, default_y_spawn_pos
+	movb	$45, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
 
 
 	ret
+
+
 
 enemy_wave_2:
 	movq	$wave_2_created, %rdi
@@ -457,21 +511,82 @@ enemy_wave_2:
 
 	call   delete_ships
 	
-	movb	$10, %dil  # x coord
+	movb	$15, %dil  # x coord
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
-	movb	$20, %dil  # x coord
+	movb    $7, default_y_spawn_pos
+	movb	$15, %dil  # x coord
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
-	movb	$30, %dil  # x coord
-	movb    $2, %sil  # ship type 2
+	movb    $4, default_y_spawn_pos
+
+	movb    $10, default_y_spawn_pos
+	movb	$15, %dil  # x coord
+	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
-	movb	$50, %dil  # x coord
-	movb    $2, %sil  # ship type 2
+	movb    $4, default_y_spawn_pos
+
+	# HERE
+	movb	$60, %dil  # x coord
+	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
+	
+	movb    $60, default_y_spawn_pos
+	movb	$15, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
+	movb    $10, default_y_spawn_pos
+	movb	$60, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
+
+	movb    $0, enemy_ship_type_3_movement
+	movb	$25, %dil  # x coord
+	movb    $3, %sil  # ship type 1
+	call    create_basic_ship
+	
+	movb    $1, enemy_ship_type_3_movement
+
+	movb    $7, default_y_spawn_pos
+	movb	$25, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
+	movb    $10, default_y_spawn_pos
+	movb	$25, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
+
+	movb	$45, %dil  # x coord
+	movb    $2, %sil  # ship type 1
+	call    create_basic_ship
+	
+	movb    $7, default_y_spawn_pos
+	movb	$45, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $10, default_y_spawn_pos
+	movb	$45, %dil  # x coord
+	movb    $1, %sil  # ship type 1
+	call    create_basic_ship
+
+	movb    $4, default_y_spawn_pos
+
 
 	ret
 
@@ -481,41 +596,29 @@ enemy_wave_1:
 
 	call    delete_ships
 	
-	movb	$10, %dil  # x coord
-	movb    $1, %sil  # ship type 1
+
+	movb	$25, %dil  # x coord
+	movb    $2, %sil  # ship type 1
 	call    create_basic_ship
-
-	movzb   default_y_spawn_pos, %rax
-	movb    $6, default_y_spawn_pos
-
-	movb	$10, %dil  # x coord
+	
+	movb    $7, default_y_spawn_pos
+	movb	$25, %dil  # x coord
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
 	movb    $4, default_y_spawn_pos
 
-	movb	$50, %dil  # x coord
+
+	movb	$45, %dil  # x coord
+	movb    $2, %sil  # ship type 1
+	call    create_basic_ship
+	
+	movb    $7, default_y_spawn_pos
+	movb	$45, %dil  # x coord
 	movb    $1, %sil  # ship type 1
 	call    create_basic_ship
 
-
-	movzb   default_y_spawn_pos, %rax
-	movb    $6, default_y_spawn_pos
-
-	movb	$30, %dil  # x coord
-	movb    $3, %sil  # ship type 3
-	call    create_basic_ship
-
 	movb    $4, default_y_spawn_pos
-
-	movb	$30, %dil  # x coord
-	movb    $3, %sil  # ship type 3
-	call    create_basic_ship
-
-	movb	$30, %dil  # x coord
-	movb    $3, %sil  # ship type 3
-	call    create_basic_ship
-
 
 	ret
 
@@ -983,14 +1086,17 @@ all_ships_killed:
 
 	standard_wave:
 		incq 	wave_counter
-		cmpq 	$4, wave_counter
-		jg  	epilogue_ask
 
 		cmpq 	$2, wave_counter
 		je 		wave2
 
 		cmpq 	$3, wave_counter
 		je 		wave3
+
+		cmpq 	$4, wave_counter
+		je 		wave4
+
+		jmp    epilogue_ask
 
 	wave2:
 	movq 	$0, number_of_ships
