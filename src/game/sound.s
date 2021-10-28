@@ -1,8 +1,9 @@
 .section .game.text
 .global audio_loop
 
-is_player_running: .byte 0
+is_player_running:  .byte 0
 current_song_index: .byte 0
+is_player_looping:  .byte 0
 
 playlist:
     .quad music
@@ -12,15 +13,17 @@ playlist_length:
 
 play_song:
     # DIL=index in playlist to play
+    # RSI=1 if we should loop; 0 otherwise
     call    muteSpeaker # Maybe previous song is still playing
     movb    %dil, current_song_index # Change the song based on the playlist
     movb    $1, is_player_running # Signal to audio_loop it can play the song
     movq    $8, sound_index # Reset player position to the start
+    movb    %sil, is_player_looping # Set the loop parameter for the player
     ret
 
 pause_song:
-    movb $0, is_player_running
-    call muteSpeaker
+    movb    $0, is_player_running
+    call    muteSpeaker
     ret
 
 audio_loop:
@@ -29,8 +32,11 @@ audio_loop:
     je      2f
 
 	movq    sound_index, %r15 
+
     movzb   current_song_index, %rcx
+    shl     $3, %rcx # Multiply by 8 to get correct entry in the playlist
     movq    playlist(%rcx), %rcx
+
 	movb    (%r15, %rcx), %dil
 
 	cmpb	 $255,%dil
@@ -50,14 +56,20 @@ audio_loop:
 	note_off:
 		call 	muteSpeaker
 	ignore:
+        incq	%r15 
+        movzb   current_song_index, %rcx # Get the index of the current song
+        movq    playlist_length(%rcx), %rcx # Get the length (in bytes) of the current song
+        cmpq	%rcx, %r15 # Check if we've reached the end of the song
+        jne     1f
+        cmpb    $1, is_player_looping # Check if we should loop
+        je      player_loop_song # If yes loop the song
+        movb	$0, is_player_running # We've reached the end stop the player (since we don't loop)
+        jmp 2f
 
-	incq	%r15 
-    movzb   current_song_index, %rcx # Get the index of the current song
-    movq    playlist_length(%rcx), %rcx # Get the length (in bytes) of the current song
-	cmpq	%rcx, %r15 # Check if we've reached the end of the song
-	jne     1f
-	movb	$0, is_player_running # If we've reached the end stop the player
-    jmp     2f
+    player_loop_song:
+        # First 8 bytes are trash
+        movq    $8, sound_index # If we're looping reset sound index and keep playing
+        jmp     2f
 
 	1:
 	movq	%r15,sound_index

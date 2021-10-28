@@ -415,6 +415,7 @@ enemy_wave_3:
 
     # Start the boss music
     movb 	$0, %dil
+    movb 	$1, %sil
     call 	play_song
 
     # Do the big fat bus animation
