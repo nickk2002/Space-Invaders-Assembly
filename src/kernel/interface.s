@@ -25,6 +25,10 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .global playFrequency
 .global isKeyDown
 .global isKeyUp
+.global getRandom
+
+.section .kernel.data
+cur_random: .quad 107
 
 .section .kernel
 
@@ -141,4 +145,23 @@ isKeyDown:
 
 isKeyUp:
     call ps2_is_key_up
+    ret
+
+rng_get_next:
+    movq    cur_random, %rax
+    movq    $48271, %rcx
+    mulq    %rcx
+    movq    %rax, cur_random
+    movq    $2147483647, %rcx
+    movq    $0, %rdx # No top 64 bits
+    divq    %rcx
+    movq    %rdx, %rax
+    ret
+
+getRandom:
+    # RDI=the upper bound (exclusive) of the random number
+    call    rng_get_next # Generate the next random number
+    movq    $0, %rdx # No top 64 bits
+    divq    %rdi # Divide the random with our limit
+    movq    %rdx, %rax # Get the modulo of the division, as the result
     ret

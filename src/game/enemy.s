@@ -362,9 +362,9 @@ create_basic_ship:
 
 enemy_wave_3:
 
+
 	movq	$wave_3_created, %rdi
 	call    log_string
-
 
 	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
@@ -394,6 +394,10 @@ enemy_wave_3:
 	// movb 	$10, %dil
 	// movb 	$6, %sil
 	// call  	create_basic_ship
+
+    # Start the boss music
+    movb $0, %dil
+    call play_song
 
 	ret
 
@@ -445,6 +449,8 @@ enemy_wave_1:
 
 enemy_wave_blank:
 	movq 	$0, number_of_ships
+    call    pause_song # Pause the current song
+    # TODO player a win song maybe?
 	ret
 
 print_all_enemy_ships:

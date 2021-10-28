@@ -271,11 +271,11 @@ player_shoot:
 	# we did press Z
 	# we mark start_anim true
 	movb 	$1, start_anim
-    movq 	$2000, %rdi
-    call 	playFrequency
-    call 	unmuteSpeaker
-    movq 	$500, %rdi
-    call 	playFrequency
+    /*movq 	$2000, %rdi*/
+    /*call 	playFrequency*/
+    /*call 	unmuteSpeaker*/
+    /*movq 	$500, %rdi*/
+    /*call 	playFrequency*/
 	
 
 	# epilogue		
