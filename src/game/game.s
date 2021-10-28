@@ -43,6 +43,9 @@ gameInit:
     # TODO fix this
     // call 	timer_init
 
+        movb    $1, %dil
+    call    play_song
+
 	ret
 # run when the game is started again
 game_started:
@@ -54,6 +57,8 @@ game_started:
     call    log_string
     call    log_newline
     movb    $0, won_animation
+
+
 
     ret 
 
