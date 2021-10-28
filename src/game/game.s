@@ -43,7 +43,7 @@ gameInit:
     # TODO fix this
     // call 	timer_init
 
-        movb    $0, %dil
+        movb    $1, %dil
     call    play_song
 
 	ret
