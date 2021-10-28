@@ -92,9 +92,9 @@ timer_init:
     movq	$audio_loop, %rsi  
     call    add_timer
 
-	// movq	game_loop_fps, %rdi 
-	// movq	$gameLoop, %rsi  
-	// call    add_timer
+	movq	game_loop_fps, %rdi 
+	movq	$gameLoop, %rsi  
+	call    add_timer
 
 	movq	$1, %rdi 
 	movq	$toggle_every_second, %rsi  

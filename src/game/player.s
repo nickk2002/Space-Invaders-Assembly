@@ -45,8 +45,6 @@
 	    .quad player_move_left
 	    .quad player_move_right
 
-
-
 player_init:
 	# prologue
 	pushq   %rbp 
@@ -60,7 +58,9 @@ player_init:
 
 	movb    $0, player_dead
 	movb 	$0, player_won
-	movb    $0, player_points
+	movq    $0, player_points
+
+    movb    $0, player_full_auto
 
 	# epilogue		
 	movq    %rbp, %rsp

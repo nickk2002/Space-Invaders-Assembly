@@ -43,9 +43,6 @@ gameInit:
     # TODO fix this
     // call 	timer_init
 
-        movb    $1, %dil
-    call    play_song
-
 	ret
 # run when the game is started again
 game_started:
@@ -58,7 +55,9 @@ game_started:
     call    log_newline
     movb    $0, won_animation
 
-
+    movb    $1, %dil
+    movb    $1, %sil
+    call    play_song
 
     ret 
 
@@ -125,6 +124,11 @@ not_first_run:
     jmp     game_loop_end
 
     3:
+    cmpb    $0, is_player_running
+    jne     4f
+    call    resume_previous_song
+
+    4:
     call 	player_loop
     call 	enemy_loop
     call 	display_information

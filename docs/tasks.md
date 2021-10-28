@@ -12,16 +12,16 @@
 - [X] Make 2 waves
 
 ## Boss
-- [ ] Show boss HP
-- [ ] Move the boss random so that is does not get out of the window
+- [ ] *Optional* Show boss HP
+- [x] Move the boss random so that is does not get out of the window
 - [x] Add more HP
 - [x] Add multiple projectiles
-- [ ] Music for boss fight
+- [x] Music for boss fight
 - [x] Defeating the boss should make the player win the game
 - [x] ASCII art *big fat bus*
 
 ## Sound
-- [ ] Modify timer code, to allow higher sample rate for music
+- [x] Modify timer code, to allow higher sample rate for music
 - [X] Simple method to play list of frequencies
 
 ## Menu
@@ -30,16 +30,16 @@
 - [x] Option 1 *New game* should start a new game
 - [x] Option 2 *Tutorial* should show a static screen explaining controls, and game info
 - [x] Option 3 *Difficulty* should set the difficulty
-- [ ] Option 4 *Quit* should quit the game
+- [x] Option 4 *Quit* should quit the game
 - [ ] *Optional* Make the menu nicer (highlight, select with arrows, press enter to choose option)
 
 ## Scores
 - [X] Display section where we display information about the player
 - [X] Assign score the each enemy. Make destorying the enemy reward scores
 - [X] Track the highest score so far
-- [ ] Scores increase with difficulty
+- [x] Scores increase with difficulty
 
 ## Player
 - [X] Implement HP points
-- [ ] Make shooting more projectiles work
+- [ ] *Optional* Make shooting more projectiles work
 - [X] Getting to 0 HP should make the player lose and return to the menu

@@ -88,7 +88,8 @@
 	hard_string: .asciz "[Difficulty]: hard\n"
 	wave_1_created: .asciz "[Waves]: Wave 1 created!\n"
 	wave_2_created: .asciz "[Waves]: Wave 2 created!\n"
-	wave_3_created: .asciz "[Waves]: The boss created!\n"
+	wave_3_created: .asciz "[Waves]: Wave 3 created!\n"
+	wave_4_created: .asciz "[Waves]: The boss created!\n"
 
 jumptable_difficulties:
 	.quad set_difficulty_easy
@@ -111,6 +112,11 @@ set_difficulty_easy:
 	movb    $3, enemy_ship_type_3_hp
 	movb    $15, enemy_ship_type_boss3_hp
 
+    movb    $1, enemy_ship_type_1_points
+    movb    $3, enemy_ship_type_2_points
+    movb    $10, enemy_ship_type_3_points
+    movb    $20, enemy_ship_type_boss3_points
+
 	ret 
 
 set_difficulty_medium:
@@ -125,6 +131,12 @@ set_difficulty_medium:
 	movb    $4, enemy_ship_type_2_hp
 	movb    $6, enemy_ship_type_3_hp
 	movb    $20, enemy_ship_type_boss3_hp
+
+    movb    $2, enemy_ship_type_1_points
+    movb    $4, enemy_ship_type_2_points
+    movb    $15, enemy_ship_type_3_points
+    movb    $25, enemy_ship_type_boss3_points
+
 	ret 
 
 set_difficulty_hard:
@@ -139,6 +151,12 @@ set_difficulty_hard:
 	movb    $8, enemy_ship_type_2_hp
 	movb    $8, enemy_ship_type_3_hp
 	movb    $30, enemy_ship_type_boss3_hp
+
+    movb    $4, enemy_ship_type_1_points
+    movb    $6, enemy_ship_type_2_points
+    movb    $20, enemy_ship_type_3_points
+    movb    $40, enemy_ship_type_boss3_points
+
 	ret 
 
 enemy_init:
@@ -377,7 +395,7 @@ delete_ships:
 enemy_wave_4:
 
 
-	movq	$wave_3_created, %rdi
+	movq	$wave_4_created, %rdi
 	call    log_string
 
 	call    delete_ships
@@ -391,8 +409,6 @@ enemy_wave_4:
 	movb 	$10, %dil
 	movb 	$5, %sil
 	call  	create_basic_ship
-
-
 
 	movb 	$10, %dil
 	movb 	$4, %sil
@@ -411,17 +427,20 @@ enemy_wave_4:
 	call  	create_basic_ship
 
     # Start the boss music
+    call    pause_song
     movb 	$0, %dil
     movb 	$1, %sil
     call 	play_song
 
     # Do the big fat bus animation
-    # TODO move this from game.s
     movq    $pattern_big_fat_bus, %rdi
     call    start_pattern_animation
 	ret
 
 enemy_wave_3:
+	movq	$wave_3_created, %rdi
+	call    log_string
+
 	call    delete_ships
 
 	
@@ -995,6 +1014,11 @@ delete_dead_ship:
 	call 	swap
 
 	decq 	number_of_ships
+    call    pause_song # Pauses the main game song (saves state)
+    movb    $2, %dil
+    movb    $0, %sil
+    call    play_song # Play the ship killed sound effect
+
 
 	epilogue_dds:
 		popq 	%r15

@@ -57,7 +57,7 @@ player_won_screen:
     movb    $0x0f, %cl
     call    print_pattern
 
-    movq    $5, %rdi 
+    movq    $3, %rdi 
     movq    $2, %rsi 
     movq    $player_static_won, %rdx 
     movb    $0x0f, %cl 
