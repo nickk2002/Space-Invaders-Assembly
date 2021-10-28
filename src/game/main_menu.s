@@ -3,44 +3,16 @@
 	option2: .asciz "Press 2 to see the tutorial"
 	option3: .asciz "Press 3 to select the dificulty level"
 	option4: .asciz "Press 4 to quit the game"
-    tutorial: .asciz " _____     _             _       _ 
-|_   _|   | |           (_)     | |
-  | |_   _| |_ ___  _ __ _  __ _| |
-  | | | | | __/ _ \\| '__| |/ _` | |
-  | | |_| | || (_) | |  | | (_| | |
-  \\_/\\__,_|\\__\\___/|_|  |_|\\__,_|_|\n\nYou have to press left right to control the space ship.
-Good luck!\nEach ship that you destroy gives you points.Press W to shoot and have fun!"
+
     close_menu_prompt: .asciz "Press Q to return to the main menu!"
     difficulty_prompt: .asciz "Please select the dificulty level\n1. Easy\n2. Medium\n3. Hard"
-    player_dead_message: .asciz "Press Q to return to the main menu\n _____                     _             _                        
-|  ___|                   (_)           | |                       
-| |__ _ __   ___ _ __ ___  _  ___  ___  | |__   __ ___   _____    
-|  __| '_ \\ / _ \\ '_ ` _ \\| |/ _ \\/ __| | '_ \\ / _` \\ \\ / / _ \\   
-| |__| | | |  __/ | | | | | |  __/\\__ \\ | | | | (_| |\\ V /  __/   
-\\____/_| |_|\\___|_| |_| |_|_|\\___||___/ |_| |_|\\__,_| \\_/ \\___|   
-                                                                  
-                                                                  
- _                _                                   _           
-| |              | |                                 | |          
-| |__   ___  __ _| |_ ___ _ __    _   _  ___  _   _  | |__  _   _ 
-| '_ \\ / _ \\/ _` | __/ _ \\ '_ \\  | | | |/ _ \\| | | | | '_ \\| | | |
-| |_) |  __/ (_| | ||  __/ | | | | |_| | (_) | |_| | | |_) | |_| |
-|_.__/ \\___|\\__,_|\\__\\___|_| |_|  \\__, |\\___/ \\__,_| |_.__/ \\__, |
-                                   __/ |                     __/ |
-                                  |___/                     |___/ 
-          __           _                      __   _____          
-         / _|         | |                    / _| / __  \\         
-  __ _  | |_ __ _  ___| |_ ___  _ __    ___ | |_  `' / /'         
- / _` | |  _/ _` |/ __| __/ _ \\| '__|  / _ \\|  _|   / /           
-| (_| | | || (_| | (__| || (_) | |    | (_) | |   ./ /___         
- \\__,_| |_| \\__,_|\\___|\\__\\___/|_|     \\___/|_|   \\_____/         
-                                                                  
-                                                                                                                                                                                          
-"
+    player_static_won: .asciz "Press Q to return to the main menu!\n Congrats you won!"
 
 
 
 .data
+	won_animation: .byte 0
+
 	current_option: .quad 5
 	middle_x: .byte 25
 	exiting_main_menu: .byte 0
@@ -52,7 +24,7 @@ Good luck!\nEach ship that you destroy gives you points.Press W to shoot and hav
 		.quad handle_option4
 
 .global main_menu_handle
-.global is_game_started,player_dead_screen
+.global is_game_started,player_dead_screen,player_won_message
 
 is_game_started:
     cmpq $0, current_option
@@ -65,9 +37,43 @@ is_game_started_return:
     ret
 
 
+player_won_screen:
+	
+	cmpb    $1, won_animation
+	je      2f
+	movq	$player_won_message, %rdi 
+	call    start_pattern_animation
+	movb    $1, won_animation
+
+	2:
+	cmpb    $1, is_animation_running
+	jne     print_static
+    call    do_pattern_animation
+    jmp     1f
+    print_static:
+
+    movq    $5, %rdi 
+    movq    $0, %rsi 
+    movq    $player_static_won, %rdx 
+    movb    $0x0f, %cl 
+    call    print_pattern
+
+    call 	readKeyCode
+    movb 	%al, %dil # Save the pressed key in DIL
+    cmpb 	$0x10, %al # If Q is pressed
+
+    jne     1f
+
+	movq 	$5, current_option
+	movb 	$0, exiting_main_menu
+
+    1:
+    ret 
+
+
 player_dead_screen:
 
-    movq    $10, %rdi 
+    movq    $5, %rdi 
     movq    $0, %rsi 
     movq    $player_dead_message, %rdx 
     movb    $0x0f, %cl 
@@ -79,12 +85,9 @@ player_dead_screen:
     cmpb 	$0x10, %al # If Q is pressed
 
     jne     1f
-    movq	$42, %rdi 
-    call    log_numq
-	movq 	$5, current_option
 
+	movq 	$5, current_option
 	movb 	$0, exiting_main_menu
-	call    gameInit
 
 
     1:
@@ -96,6 +99,8 @@ handle_option1:
     # TODO: the game doesn't start if other options were used before
     # Game loop is going to detect this option and run the game
     # So nothing to print here
+    call    game_started
+
 	ret 
 
 handle_option2:
@@ -154,8 +159,8 @@ handle_option3:
 change_difficulty:
     movb 	%sil, difficulty_level
 
-	movb	difficulty_level, %dil 
-	call    log_numb
+	// movb	difficulty_level, %dil 
+	// call    log_numb
 
     movb    $0, exiting_main_menu
 

@@ -163,10 +163,3 @@ handle_timer:
 
 	leave
 	ret
-
-
-
-
-
-
-

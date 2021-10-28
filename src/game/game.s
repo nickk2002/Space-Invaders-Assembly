@@ -25,24 +25,14 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 .section .game.data
 is_first_run: .byte 1
 init_done_str: .asciz "[INFO]: GameInit() done"
+game_loop_str: .asciz "[INFO]: GameStarted() done"
 pattern_animate_test: .asciz "==================================================test this is a test wow so much tesxt here this is a test =========== asdfkjawnetioj4@#$@#%T^@\nasdasdasdasd"
-
-pattern_big_fat_bus: .asciz " _____ _            _     _          __      _     _                 _                           _                __                               
-|_   _| |          | |   (_)        / _|    | |   | |               (_)                         (_)              / _|                              
-  | | | |__   ___  | |__  _  __ _  | |_ __ _| |_  | |__  _   _ ___   _ ___    ___ ___  _ __ ___  _ _ __   __ _  | |_ ___  _ __   _   _  ___  _   _ 
-  | | | '_ \\ / _ \\ | '_ \\| |/ _` | |  _/ _` | __| | '_ \\| | | / __| | / __|  / __/ _ \\| '_ ` _ \\| | '_ \\ / _` | |  _/ _ \\| '__| | | | |/ _ \\| | | |
-  | | | | | |  __/ | |_) | | (_| | | || (_| | |_  | |_) | |_| \\__ \\ | \\__ \\ | (_| (_) | | | | | | | | | | (_| | | || (_) | |    | |_| | (_) | |_| |
-  \\_/ |_| |_|\\___| |_.__/|_|\\__, | |_| \\__,_|\\__| |_.__/ \\__,_|___/ |_|___/  \\___\\___/|_| |_| |_|_|_| |_|\\__, | |_| \\___/|_|     \\__, |\\___/ \\__,_|
-                             __/ |                                                                        __/ |                   __/ |            
-                            |___/                                                                        |___/                   |___/             "
 
 .section .game.text
 
 gameInit:
 
 	call 	clear_screen
-	call 	player_init
-	call 	enemy_wave_1
 
     movq $init_done_str, %rdi
     call log_string
@@ -54,6 +44,18 @@ gameInit:
     // call 	timer_init
 
 	ret
+# run when the game is started again
+game_started:
+
+    call    player_init
+    call    enemy_init
+    
+    movq    $game_loop_str, %rdi
+    call    log_string
+    call    log_newline
+    movb    $0, won_animation
+
+    ret 
 
 gameLoop:	
 	# prologue
@@ -76,6 +78,7 @@ game_loop_running:
     jne 	not_first_run
     movb 	$0, is_first_run
 
+
     # Do things here when game is launched from the main menu for the first time
     movq 	$0, %rdi
 reset_keypress_info:
@@ -87,27 +90,40 @@ reset_keypress_info:
 
 
 not_first_run:
-    cmpb    $0, player_dead 
-    je     1f  
-    # Stops the boss music
-    # TODO: a litte song when the player loses?
-    call    pause_song
-    call    player_dead_screen
-    jmp     2f
+    cmpb    $1, player_dead 
+    jne     1f
 
-    1:
-    # player is not dead
+    pld: 
+        # player is dead
+        call    player_dead_screen
+        call    pause_song
+
+        jmp     game_loop_end
+
+    1: 
+
+    cmpb    $1, player_won
+    jne     continue_playing  
+    player_won_game:
+        call    player_won_screen
+        jmp     game_loop_end
+
+    
+    continue_playing:  
+
+    # player is not dead and is still playing
 	call 	clear_screen
     cmpb    $1, is_animation_running
     jne     3f
+
     call    do_pattern_animation
-    jmp     2f
+    jmp     game_loop_end
+
     3:
     call 	player_loop
     call 	enemy_loop
     call 	display_information
 
-    2:
 
 
 game_loop_end:

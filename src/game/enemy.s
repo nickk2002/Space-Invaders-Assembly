@@ -7,9 +7,18 @@
 	enemy_ship_type_2: .asciz "|___   ___|
     | |"
     enemy_ship_type_3: .asciz "[__U__]"
-    enemy_ship_type_4: .asciz "QWERTY1234567890QWERTY1234567890"
-    enemy_ship_type_5: .asciz "QWERTY1234567890QWERTY1234567890"
-    enemy_ship_type_6: .asciz "QWERTY1234567890QWERTY1234567890"
+    enemy_ship_type_4: .asciz ""
+    enemy_ship_type_5: .asciz ""
+    enemy_ship_type_6: .asciz " .-------------------------------------------------------------.
+'------..-------------..----------..----------..----------..--.|
+|       \\\\           THE BIG FAT BUS          ||          ||  ||
+|        \\\\           ||          ||          ||          ||  ||
+|    ||   || //   //  ||   //  // ||//   //   ||   //   //|| /||
+|_.------\"''----------''----------''----------''----------''--'|
+| |      |  _-_  |       |       |    |  .-.    |      ||==| C|
+| |  __  |.'.-.' |   _   |   _   |    |.'.-.'.  |  __  | \"__=='
+'---------'|( )|'-----------| |---------'|( )|'----------\"\"
+"
 
 
 	ship_type_1: .byte 0  
@@ -19,6 +28,7 @@
 	enemy_ship_type_1_points:  .byte 1
 	enemy_ship_type_1_movement:  .byte 1
 	enemy_ship_type_1_full_auto:  .byte 0
+	enemy_ship_type_1_hp: .byte 1
 
 	ship_type_2: .byte 0
     enemy_ship_type_2_width: .byte 11
@@ -27,6 +37,7 @@
 	enemy_ship_type_2_points:  .byte 3
 	enemy_ship_type_2_movement:  .byte 0
 	enemy_ship_type_2_full_auto:  .byte 1
+	enemy_ship_type_2_hp: .byte 2
 
 	ship_type_3: .byte 0
     enemy_ship_type_3_width: .byte 7
@@ -35,30 +46,34 @@
 	enemy_ship_type_3_points:  .byte 5
 	enemy_ship_type_3_movement:  .byte 1
 	enemy_ship_type_3_full_auto:  .byte 1
+	enemy_ship_type_3_hp: .byte 3
 
 	ship_type_4: .byte 0
-    enemy_ship_type_boss1_width: .byte 32
-   	enemy_ship_type_boss1_height:  .byte 1
-	enemy_ship_type_boss1_canon_x:  .byte 3
+    enemy_ship_type_boss1_width: .byte 0
+   	enemy_ship_type_boss1_height:  .byte 8
+	enemy_ship_type_boss1_canon_x:  .byte 13
 	enemy_ship_type_boss1_points:  .byte 5
-	enemy_ship_type_boss1_movement:  .byte 0
+	enemy_ship_type_boss1_movement:  .byte 1
 	enemy_ship_type_boss1_full_auto:  .byte 1
+	enemy_ship_type_boss1_hp: .byte 1
 
 	ship_type_5: .byte 0
-    enemy_ship_type_boss2_width: .byte 32
-   	enemy_ship_type_boss2_height:  .byte 1
-	enemy_ship_type_boss2_canon_x:  .byte 10
+    enemy_ship_type_boss2_width: .byte 0
+   	enemy_ship_type_boss2_height:  .byte 8
+	enemy_ship_type_boss2_canon_x:  .byte 29
 	enemy_ship_type_boss2_points:  .byte 5
-	enemy_ship_type_boss2_movement:  .byte 0
+	enemy_ship_type_boss2_movement:  .byte 1
 	enemy_ship_type_boss2_full_auto:  .byte 1
+	enemy_ship_type_boss2_hp:	.byte 5
 
 	ship_type_6: .byte 0
-    enemy_ship_type_boss3_width: .byte 32
-   	enemy_ship_type_boss3_height:  .byte 1
-	enemy_ship_type_boss3_canon_x:  .byte 15
+    enemy_ship_type_boss3_width: .byte 64
+   	enemy_ship_type_boss3_height:  .byte 8
+	enemy_ship_type_boss3_canon_x:  .byte 43
 	enemy_ship_type_boss3_points:  .byte 5
-	enemy_ship_type_boss3_movement:  .byte 0
+	enemy_ship_type_boss3_movement:  .byte 1
 	enemy_ship_type_boss3_full_auto:  .byte 1
+	enemy_ship_type_boss3_hp:	.byte 5
 
 .data
 	pos_y:  .quad 0
@@ -68,9 +83,96 @@
 	number_of_ships: .quad 0
 	attribute_count: .quad 16
 	wave_counter: .quad 1
+	easy_string: .asciz "[Difficulty]: easy\n"
+	medium_string: .asciz "[Difficulty]: medium\n"
+	hard_string: .asciz "[Difficulty]: hard\n"
+	wave_1_created: .asciz "[Waves]: Wave 1 created!\n"
+	wave_2_created: .asciz "[Waves]: Wave 2 created!\n"
+	wave_3_created: .asciz "[Waves]: The boss created!\n"
 
-.global number_of_ships, get_ship_at_position, enemy_loop
+jumptable_difficulties:
+	.quad set_difficulty_easy
+	.quad set_difficulty_medium
+	.quad set_difficulty_hard
 
+.global number_of_ships, get_ship_at_position, enemy_loop,enemy_init
+
+
+set_difficulty_easy:
+	movq	$easy_string, %rdi 
+	call    log_string
+
+	#init player easy lives
+	movb    initial_health_easy, %ah
+	movb 	%ah, nr_lives
+
+	movb    $2, enemy_ship_type_1_hp
+	movb    $3, enemy_ship_type_2_hp
+	movb    $3, enemy_ship_type_3_hp
+	movb    $10, enemy_ship_type_boss1_hp
+	movb    $6, enemy_ship_type_boss2_hp
+	movb    $6, enemy_ship_type_boss3_hp
+
+	ret 
+
+set_difficulty_medium:
+	movq	$medium_string, %rdi 
+	call    log_string
+
+	#init player medium lives
+	movb    initial_health_medium, %ah
+	movb 	%ah, nr_lives
+
+	movb    $4, enemy_ship_type_1_hp
+	movb    $4, enemy_ship_type_2_hp
+	movb    $6, enemy_ship_type_3_hp
+	movb    $8, enemy_ship_type_boss1_hp
+	movb    $8, enemy_ship_type_boss2_hp
+	movb    $8, enemy_ship_type_boss3_hp
+	ret 
+
+set_difficulty_hard:
+	movq	$hard_string, %rdi 
+	call    log_string
+
+	#init player hard lives
+	movb    initial_health_hard, %ah
+	movb 	%ah, nr_lives
+
+	movb    $5, enemy_ship_type_1_hp
+	movb    $8, enemy_ship_type_2_hp
+	movb    $8, enemy_ship_type_3_hp
+	movb    $10, enemy_ship_type_boss1_hp
+	movb    $10, enemy_ship_type_boss2_hp
+	movb    $10, enemy_ship_type_boss3_hp
+	ret 
+
+enemy_init:
+	movq 	$1,wave_counter
+	call    enemy_handle_difficulties
+	call 	enemy_wave_1
+	ret
+
+enemy_handle_difficulties:
+	
+	movq	$0, %rdi 	
+	cmpb	$1, difficulty_level
+	je 		handle_difficulty
+	incq	%rdi 
+
+	cmpb	$2, difficulty_level
+	je 		handle_difficulty
+	incq	%rdi 
+
+	cmpb	$3, difficulty_level
+	je 		handle_difficulty
+	incq	%rdi 
+
+	handle_difficulty:
+		call	*jumptable_difficulties(,%rdi,8)
+
+	ret
+	
 enemy_loop:
 	call print_all_enemy_ships
 	call detect_collision_enemy_bullet
@@ -218,6 +320,7 @@ create_basic_ship:
 	call    get_ship_pointer_from_type
 	popq    %rdi 
 
+	pushq 	 %rax
 	pushq    %rsi 
 
 	# rdi -> dil from the parameter x coord
@@ -231,7 +334,7 @@ create_basic_ship:
 	movb 	5(%rax), %r14b # movement parameter of the ship
 	xorq 	%r13, %r13
 	movb 	6(%rax), %r13b # full auto boolean
-	popq 	%rax
+	popq 	%rax       # get type of the ship back
 	movb    %al,  %r8b # type of the ship
 	addb	%dil, %r9b # x coord bullet
 
@@ -242,7 +345,14 @@ create_basic_ship:
 
 	movb 	%r13b, %r11b # default shooting value based on full auto boolean 
 
-	pushq 	$3 # 3 hp
+	popq	%rax    # get pointer back
+	movb	7(%rax), %al
+	andq    $0xff, %rax
+	// movq	%rax, %rdi 
+	// call    log_numq
+
+	pushq 	%rax # hp of the ship
+
 	pushq 	$2 # colour
 	pushq 	%r14 # movement
 	pushq 	%r15 # points for killing the ship
@@ -260,7 +370,11 @@ create_basic_ship:
 	ret
 
 enemy_wave_3:
-    # The boss wave
+
+
+	movq	$wave_3_created, %rdi
+	call    log_string
+
 	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
 	movq	enemy_array,%rax 
@@ -278,6 +392,7 @@ enemy_wave_3:
 	// movb    $2, %sil  # ship type 2
 	// call    create_basic_ship
 
+	# THE BOSSS
 	movb 	$10, %dil
 	movb 	$4, %sil
 	call  	create_basic_ship
@@ -291,8 +406,8 @@ enemy_wave_3:
 	call  	create_basic_ship
 
     # Start the boss music
-    movb $0, %dil
-    call play_song
+    movb 	$0, %dil
+    call 	play_song
 
     # Do the big fat bus animation
     # TODO move this from game.s
@@ -301,6 +416,9 @@ enemy_wave_3:
 	ret
 
 enemy_wave_2:
+	movq	$wave_2_created, %rdi
+	call    log_string
+
 	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
 	movq	enemy_array,%rax 
@@ -325,6 +443,9 @@ enemy_wave_2:
 	ret
 
 enemy_wave_1:
+	movq	$wave_1_created, %rdi
+	call    log_string
+
 	movq	$0, number_of_ships
 	# current_pointer <- enemy_array
 	movq	enemy_array,%rax 
@@ -342,6 +463,7 @@ enemy_wave_1:
 
 enemy_wave_blank:
 	movq 	$0, number_of_ships
+	movb    $1, player_won
     call    pause_song # Pause the current song
     # TODO player a win song maybe?
 	ret
@@ -462,14 +584,13 @@ print_ships:
 
 	ret
 
-# parameter %rdi - index of the ship which shoots
+# parameter %rdi - pointer to the ship which shoots
 enemy_shoot:
 	# prologue
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
-	call 	get_ship_at_position 	# index already in %rdi
-	movb 	$1, 7(%rax) 			# set boolean shooting to 1
+	movb 	$1, 7(%rdi) 			# set boolean shooting to 1
 
 	# epilogue
 	movq    %rbp, %rsp
@@ -539,8 +660,9 @@ enemy_bullet_animation:
 		addb    3(%r14), %al 
 		# reached end of the animation
 		movb 	%al, 6(%r14)		# start y pos of bullet
-		movb 	12(%r14), %dil 		# get full auto boolean of the ship
-		movb 	%dil, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
+		// movb 	12(%r14), %dil 		# get full auto boolean of the ship
+		// movb 	%dil, 7(%r14)			# if you put 1 here instead of 0, it triggers full auto mode
+		movb 	$0, 7(%r14)
 
 		enemy_bullet_continue:
 			decq 	%r15
@@ -735,6 +857,9 @@ hanlde_ships:
 		movq 	%r14, %rdi
 		call  	ship_move
 
+		movq 	%r14, %rdi
+		call 	random_shot
+
 		decq 	%r15
 		jmp 	handle_ships_loop
 
@@ -795,14 +920,17 @@ all_ships_killed:
 		je 		wave3
 
 	wave2:
+	movq 	$0, number_of_ships
 	call  	enemy_wave_2 	# create another wave
 	jmp  	epilogue_ask
 
 	wave3:
+	movq 	$0, number_of_ships
 	call  	enemy_wave_3 	# create another wave
 	jmp  	epilogue_ask
 
 	wave_blank:
+	movq 	$0, number_of_ships
 	call  	enemy_wave_blank 	# create another wave
 	jmp  	epilogue_ask
 
@@ -818,12 +946,18 @@ ship_move:
 	je  	enemy_ship_move_left
 
 	cmpb 	$41, 10(%rdi)
-	je  	enemy_ship_move_up
+	je  	enemy_ship_move_left
 
 	cmpb 	$61, 10(%rdi)
-	je  	enemy_ship_move_right
+	je  	enemy_ship_move_up
 
 	cmpb 	$81, 10(%rdi)
+	je  	enemy_ship_move_right
+
+	cmpb 	$101, 10(%rdi)
+	je  	enemy_ship_move_right
+
+	cmpb 	$121, 10(%rdi)
 	je  	enemy_ship_move_down
 
 	incb 	10(%rdi)
@@ -837,7 +971,6 @@ ship_move:
 
 	enemy_ship_move_right:
 		incb 	(%rdi)
-		// addb 	$10, (%rdi)
 		incb 	10(%rdi)
 		jmp 	epilgue_sh
 
@@ -848,8 +981,28 @@ ship_move:
 
 	enemy_ship_move_left:
 		decb 	(%rdi)
-		// subb 	$10, (%rdi)
 		incb 	10(%rdi)
 
 	epilgue_sh:
+		ret
+
+# %rdi parameter - the pointer to the ship
+random_shot:
+	pushq	%r15
+
+	cmpb 	$1, 12(%rdi) 	# check full auto boolean
+	jne 	epilogue_rs
+
+	movq  	%rdi, %r15
+	movq 	$15, %rdi 		# 1 in 15 change of shooting every fram iff the ship has full auto set to 1
+	call 	getRandom
+	cmpq 	$1, %rax
+	jne  	epilogue_rs
+
+	movq 	%r15, %rdi
+	call 	enemy_shoot
+
+	epilogue_rs:
+		popq 	%r15
+
 		ret
