@@ -26,6 +26,7 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 is_first_run: .byte 1
 init_done_str: .asciz "[INFO]: GameInit() done"
 game_loop_str: .asciz "[INFO]: GameStarted() done"
+pattern_animate_test: .asciz "==================================================test this is a test wow so much tesxt here this is a test =========== asdfkjawnetioj4@#$@#%T^@\nasdasdasdasd"
 
 .section .game.text
 
@@ -33,11 +34,12 @@ gameInit:
 
 	call 	clear_screen
 
-	
+    movq $init_done_str, %rdi
+    call log_string
+    call log_newline
 
-    movq    $init_done_str, %rdi
-    call    log_string
-    call    log_newline
+    /*movq $pattern_big_fat_bus, %rdi*/
+    /*call start_pattern_animation*/
     # TODO fix this
     // call 	timer_init
 
@@ -51,6 +53,7 @@ game_started:
     movq    $game_loop_str, %rdi
     call    log_string
     call    log_newline
+    movb    $0, won_animation
 
     ret 
 
@@ -93,24 +96,34 @@ not_first_run:
     pld: 
         # player is dead
         call    player_dead_screen
-        jmp     do_nothing
+        call    pause_song
+
+        jmp     game_loop_end
+
     1: 
 
     cmpb    $1, player_won
     jne     continue_playing  
     player_won_game:
         call    player_won_screen
-        jmp     do_nothing
+        jmp     game_loop_end
 
-
+    
     continue_playing:  
+
     # player is not dead and is still playing
 	call 	clear_screen
+    cmpb    $1, is_animation_running
+    jne     3f
+
+    call    do_pattern_animation
+    jmp     game_loop_end
+
+    3:
     call 	player_loop
     call 	enemy_loop
     call 	display_information
 
-    do_nothing:
 
 
 game_loop_end:

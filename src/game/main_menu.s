@@ -3,51 +3,16 @@
 	option2: .asciz "Press 2 to see the tutorial"
 	option3: .asciz "Press 3 to select the dificulty level"
 	option4: .asciz "Press 4 to quit the game"
-    tutorial: .asciz " _____     _             _       _ 
-|_   _|   | |           (_)     | |
-  | |_   _| |_ ___  _ __ _  __ _| |
-  | | | | | __/ _ \\| '__| |/ _` | |
-  | | |_| | || (_) | |  | | (_| | |
-  \\_/\\__,_|\\__\\___/|_|  |_|\\__,_|_|\n\nYou have to press left right to control the space ship.
-Good luck!\nEach ship that you destroy gives you points.Press W to shoot and have fun!"
+
     close_menu_prompt: .asciz "Press Q to return to the main menu!"
     difficulty_prompt: .asciz "Please select the dificulty level\n1. Easy\n2. Medium\n3. Hard"
-	player_won_message: .asciz "Press Q to return to the main menu\n\nGood job!\n__   __                                  _ 
-\\ \\ / /                                 | |
- \\ V /___  _   _  __      _____  _ __   | |
-  \\ // _ \\| | | | \\ \\ /\\ / / _ \\| '_ \\  | |
-  | | (_) | |_| |  \\ V  V / (_) | | | | |_|
-  \\_/\\___/ \\__,_|   \\_/\\_/ \\___/|_| |_| (_)
-                                           "
+    player_static_won: .asciz "Press Q to return to the main menu!\n Congrats you won!"
 
-    player_dead_message: .asciz "Press Q to return to the main menu\n _____                     _             _                        
-|  ___|                   (_)           | |                       
-| |__ _ __   ___ _ __ ___  _  ___  ___  | |__   __ ___   _____    
-|  __| '_ \\ / _ \\ '_ ` _ \\| |/ _ \\/ __| | '_ \\ / _` \\ \\ / / _ \\   
-| |__| | | |  __/ | | | | | |  __/\\__ \\ | | | | (_| |\\ V /  __/   
-\\____/_| |_|\\___|_| |_| |_|_|\\___||___/ |_| |_|\\__,_| \\_/ \\___|   
-                                                                  
-                                                                  
- _                _                                   _           
-| |              | |                                 | |          
-| |__   ___  __ _| |_ ___ _ __    _   _  ___  _   _  | |__  _   _ 
-| '_ \\ / _ \\/ _` | __/ _ \\ '_ \\  | | | |/ _ \\| | | | | '_ \\| | | |
-| |_) |  __/ (_| | ||  __/ | | | | |_| | (_) | |_| | | |_) | |_| |
-|_.__/ \\___|\\__,_|\\__\\___|_| |_|  \\__, |\\___/ \\__,_| |_.__/ \\__, |
-                                   __/ |                     __/ |
-                                  |___/                     |___/ 
-          __           _                      __   _____          
-         / _|         | |                    / _| / __  \\         
-  __ _  | |_ __ _  ___| |_ ___  _ __    ___ | |_  `' / /'         
- / _` | |  _/ _` |/ __| __/ _ \\| '__|  / _ \\|  _|   / /           
-| (_| | | || (_| | (__| || (_) | |    | (_) | |   ./ /___         
- \\__,_| |_| \\__,_|\\___|\\__\\___/|_|     \\___/|_|   \\_____/         
-                                                                  
-                                                                                                                                                                                          
-"
 
 
 .data
+	won_animation: .byte 0
+
 	current_option: .quad 5
 	middle_x: .byte 25
 	exiting_main_menu: .byte 0
@@ -73,12 +38,25 @@ is_game_started_return:
 
 
 player_won_screen:
+	
+	cmpb    $1, won_animation
+	je      2f
+	movq	$player_won_message, %rdi 
+	call    start_pattern_animation
+	movb    $1, won_animation
+
+	2:
+	cmpb    $1, is_animation_running
+	jne     print_static
+    call    do_pattern_animation
+    jmp     1f
+    print_static:
+
     movq    $5, %rdi 
     movq    $0, %rsi 
-    movq    $player_won_message, %rdx 
+    movq    $player_static_won, %rdx 
     movb    $0x0f, %cl 
     call    print_pattern
-
 
     call 	readKeyCode
     movb 	%al, %dil # Save the pressed key in DIL
