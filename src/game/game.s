@@ -49,7 +49,7 @@ gameLoop:
 	pushq   %rbp 
 	movq 	%rsp, %rbp
 
-    call 	muteSpeaker
+    /*call 	muteSpeaker*/
     call    clear_screen
 
     call 	is_game_started
