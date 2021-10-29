@@ -1,51 +1,21 @@
-gamelib-x64
+
+Space invaders in assembly let's go
 ===========
 
-Bootable game library for the Computer Organization course at Delft University of Technology. Designed to help students write a bootable game using x64 assembly. Inspired by the 32-bit [bootlib](https://github.com/m-ou-se/bootlib) project used for previous iterations of the Computer Organization course.
+Ok so we made a space invaders ascii art game in assembly for the bonus. This is how it looks like
+![image](https://user-images.githubusercontent.com/35890341/139431505-f948ee5e-de73-4412-981d-99d5367cf9d6.png)
+We also have a boss level and difficulty selection. If you want to check it out follow the following steps to download it.
 
-Requirements
-===========
+1. Open the virtual machine from the university
+2. Open the terminal
+3. Navigate to the directory where you want to save the game
+4. Type `git clone https://github.com/nickk2002/CO-Game`
+5. Run the game `make && make qemu`
+6. First check the tutorial and then play the game
+7. Have fun and enjoy the CO jokes :) 
 
-_These requirements have already been fulfilled if you are using the virtual machine provided for the lab. We will not provide support for compilation or linking errors if you are not using this virtual machine._
 
-To build your game based on gamelib-x64, you need to ensure you are using a Linux distribution on a x86-64 architecture (i.e., 64-bit Linux on any modern Intel/AMD processor) with a recent version of GNU binutils to compile. In addition, you will need Qemu or Bochs (both emulators for a.o. the x86-64 platforrm) to test your game.
 
-Getting started
-===========
-
-To get started on developing your game, execute the following steps:
-
- 1.  Download a copy of gamelib-x64, using either `git clone` or the "Download ZIP" button to the right of this page.
- 2.  Open a terminal and navigate to the root of the gamelib-x64 folder.
- 3.  Execute `make` to compile gamelib-x64 against the default (empty) game.
- 4.  Execute `make qemu` to launch the compiled game in the Qemu emulator.
- 5.  If your machine is set up correctly, and you followed the steps closely, you should see a screen that reads "Booting from Hard Disk...".
- 6.  Start development of your game by editing the `src/game/game.s` file.
-
-To test your code, repeat steps 3 and 4  to compile and run your game.
-
-API
-===========
-
-gamelib-x64 provides a restricted set of functions to its users to handle common IO operations. In your game you will be able to use the following functions (more information can be found in the `src/kernel/interface.s` file):
-
- -  `void setTimer(int16 reloadValue)`: Changes the interrupt rate of the timer, and thus the frequency of the game loop.
- -   `void putChar(int8 x, int8 y, int8 char, int8 color)`: Prints a single character to the screen with a specified color at a specified location.
- -  `int8 readKeyCode()`: Reads and returns a single byte from the keyboard buffer.
-
-In addition, your game should provide the following functions to hook into the gamelib-x64 framework:
-
- -  `void gameInit()`: Called before the main event loop starts to allow for initialization of your game state.
- -  `void gameLoop()`: Called at every timer interrupt to allow your game to read input, update its state, and show output on the screen.
-
-Limitations
-===========
-
-gamelib-x64 currently has the following limitations:
-
- -  The standard C library is unavailable, so there are no functions available other than our API and the functions you write.
- -  There is no memory management, i.e. no variant of `malloc`. You will have to reserve space for all necessary variables in a data section.
- -  The size of your executable (including code and data) is limited to about 58 KB.
 
 Copyright
 ===========
