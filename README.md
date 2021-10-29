@@ -11,9 +11,10 @@ We also have a boss level and difficulty selection. If you want to check it out 
 2. Open the terminal
 3. Navigate to the directory where you want to save the game
 4. Type `git clone https://github.com/nickk2002/CO-Game`
-5. Run the game `make && make qemu`
-6. First check the tutorial and then play the game
-7. Have fun and enjoy the CO jokes :) 
+5. Enter the directory `cd CO-Game`
+6. Run the game `make && make qemu`
+7. First check the tutorial and then play the game
+8. Have fun and enjoy the CO jokes :) 
 
 
 
