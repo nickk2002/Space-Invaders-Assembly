@@ -4,6 +4,7 @@ Space invaders in assembly let's go
 
 Ok so we made a space invaders ascii art game in assembly for the bonus. This is how it looks like
 ![image](https://user-images.githubusercontent.com/35890341/139431505-f948ee5e-de73-4412-981d-99d5367cf9d6.png)
+
 We also have a boss level and difficulty selection. If you want to check it out follow the following steps to download it.
 
 1. Open the virtual machine from the university
