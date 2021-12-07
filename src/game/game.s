@@ -136,6 +136,7 @@ not_first_run:
 
 
 game_loop_end:
+    call putCharCommit
 	# epilogue
 	movq    %rbp, %rsp
 	popq    %rbp 

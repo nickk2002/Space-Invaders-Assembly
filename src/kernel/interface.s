@@ -19,6 +19,7 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 
 .global setTimer
 .global putChar
+.global putCharCommit
 .global readKeyCode
 .global unmuteSpeaker
 .global muteSpeaker
@@ -30,6 +31,7 @@ along with gamelib-x64. If not, see <http://www.gnu.org/licenses/>.
 
 .section .kernel.data
 cur_random: .quad 107
+scr_buffer: .skip 4000
 
 .section .kernel
 
@@ -60,9 +62,26 @@ setTimer:
 	popq	%rbp
 	ret
 
+# Flush virtual buffer to the real screen, only update changed entries
+putCharCommit:
+    movq    $0xB8000, %rdi # Real buffer
+    movq    $scr_buffer, %rsi # Virtual buffer
+    movq    $2000, %rcx # Number of entries (80 * 25)
+    xorq    %rdx, %rdx # Temp variable for comparison
+commit_next:
+    movw    (%rsi), %dx # Get the current entry from the virtual buffer
+    cmpw    %dx, (%rdi) # Check if the entry is the same in the real and the virtual buffer
+    je      commit_no_push # If same, don't update
+    movw    %dx, (%rdi) # Move the entry from the virtual buffer to the real buffer
+commit_no_push:
+    addq    $2, %rdi # Move real buffer to next char
+    addq    $2, %rsi # Move virtual buffer to next char
+    loop    commit_next
+    ret
+
 # void putChar(int8 x, int8 y, int8 char, int8 color)
 #
-# Writes a character to the screen at coordinates (x, y). The resolution of
+# Writes a character to the virtual buffer at coordinates (x, y). The resolution of
 # the screen is 80 by 25 characters. For more information, look up "VGA text mode".
 putChar:
 	pushq	%rbp
@@ -81,7 +100,7 @@ putChar:
 	cmpq	$2000, %rax
 	jae		1f
 
-	movq	$0xB8000, %rdi
+	movq	$scr_buffer, %rdi
 	shlq	$1, %rax
 	addq	%rax, %rdi		# RDI now holds the address at which the 
 
