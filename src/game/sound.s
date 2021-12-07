@@ -24,10 +24,13 @@ resume_previous_song:
     ret
 
 pause_song:
+    cmpb    $2, current_song_index # If the 'ship killed' song is playing we don't want to restore it later
+    je      no_save_restore
     movq    sound_index, %rax
     movq    %rax, previous_sound_index
     movb    current_song_index, %al
     movb    %al, previous_song_index
+no_save_restore:
     movb    $0, is_player_running
     call    muteSpeaker
     ret
